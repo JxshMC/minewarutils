@@ -1,0 +1,333 @@
+config-version: !!int "2"
+#Jxsh-Core v1
+
+# Feature Toggles (Enable/Disable command groups)
+# CRITICAL: Disabling a group will UNREGISTER those commands mostly.
+features:
+  top-bottom: true # /top, /bottom
+  gamemode: true # /gamemode, /gmc, /gms, /gma, /gmsp
+  cosmetics: true # /poopgun, /devarmor
+  warps: true # /warp, /warps, /setwarp, /deletewarp, /editwarp
+  kits: true # /kit, /kits, /createkit, /deletekit, /editkit
+  op-manager: true # /tempop, /ops
+  # Standalone or Core features
+  heal: true
+  eat: true
+  fly: true
+  flyspeed: true
+  inventorysee: true
+  clearinventory: true
+  give: true
+  head: true
+  setspawn: true
+  spawn: true
+  join-spawn: true
+  itemname: true
+  lore: true
+  forcefield: true
+  buildmode: true
+
+help-system:
+  enabled: true
+  
+Kits:
+  per-kit-permission: false # If true then players need permission for every kit
+
+forcefield: # The admin /forcefield command.
+  range: 3
+  sound: "minecraft:entity.chicken.egg"
+  volume: 2.0
+  pitch: 0.1
+
+join-messages:
+  enabled: true # Controls both Join and Leave messages
+  custom-message:
+    enabled: true
+
+Join-Commands: # Command ran when players join
+  enabled: true
+  as-console:
+    enabled: true
+    commands:
+      - clear %player_name%
+
+MOTD: #The message sent to player on join
+  enabled: false
+
+# Tab-Complete Settings (Command Suggestion Blocking)
+# Players without "minewar.admin.tabcomplete" permission will only see these commands
+tab-complete:
+  # List of commands that non-admin players can see when pressing Tab
+  # Leave empty [] to hide ALL commands from non-admins
+  allowed-commands:
+    - spawn
+    - buildmode
+    - bm
+    - coinflip
+    - cf
+    - fly
+    - minewarutils
+    - mu
+
+# Command Aliases / alternative (Leave empty [] to disable)
+aliases:
+  minewarutils:
+    command: "/minewarutils"
+    aliases:
+    - "mu"
+    - "mwu"
+    sub-commands:
+      reload:
+        command: "reload"
+        aliases:
+        - "rl"
+      sneak:
+        command: "sneak"
+        aliases:
+        - "s"
+      world:
+        command: "world"
+        aliases:
+        - "w"
+      help:
+        command: "help"
+        aliases:
+        - "?"
+  mutechat:
+    command: "/mutechat"
+    aliases:
+    - mc
+  slowchat:
+    command: "/slowchat"
+    aliases:
+    - slc
+  clearchat:
+    command: "/clearchat"
+    aliases:
+    - "cc"
+  top:
+    command: "/top"
+    aliases: []
+  bottom:
+    command: "/bottom"
+    aliases: []
+  heal:
+    command: "/heal"
+    aliases: []
+  eat:
+    command: "/feed"
+    aliases:
+    - "eat"
+  fly:
+    command: "/fly"
+    aliases:
+    - "flight"
+  flyspeed:
+    command: "/flyspeed"
+    aliases:
+    - "speed"
+  gamemode:
+    command: "/gamemode"
+    aliases:
+    - "gm"
+  gmc:
+    command: "/gmc"
+    aliases: 
+    - "creative"
+  gms:
+    command: "/gms"
+    aliases: 
+    - "survival"
+  gma:
+    command: "/gma"
+    aliases: 
+    - "adventure"
+  gmsp:
+    command: "/gmsp"
+    aliases: 
+    - "spectator"
+  inventorysee:
+    command: "/inventorysee"
+    aliases:
+    - "invsee"
+  clearinventory:
+    command: "/clearinventory"
+    aliases:
+    - "ci"
+    - "clear"
+  give:
+    command: "/give"
+    aliases:
+    - "i"
+  head:
+    command: "/head"
+    aliases:
+    - "skull"
+    - "playerhead"
+    - "gethead"
+  setspawn:
+    command: "/setspawn"
+    aliases: 
+    - "setjoin"
+    - "setjoinloc"
+  spawn:
+    command: "/spawn"
+    aliases: []
+
+  buildmode:
+    command: "/buildmode"
+    aliases:
+    - "bm"
+  bmadmin:
+    command: "/bmadmin"
+    aliases:
+    - "bma"
+  bmreset:
+    command: "/bmreset"
+    aliases:
+    - "bmr"
+  poopgun:
+    command: "/poopgun"
+    aliases:
+    - "pg"
+  devarmour:
+    command: "/devarmour"
+    aliases: []
+  setwarp:
+    command: "/setwarp"
+    aliases:
+    - "createwarp"
+    - "addwarp"
+  warp:
+    command: "/warp"
+    aliases: []
+  warps:
+    command: "/warps"
+    aliases: []
+  deletewarp:
+    command: "/deletewarp"
+    aliases:
+    - "delwarp"
+    - "removewarp"
+  editwarp:
+    command: "/editwarp"
+    aliases: 
+    - "ewarp"
+    - "edwarp"
+  itemname:
+    command: "/itemname"
+    aliases:
+    - "rename"
+  lore:
+    command: "/lore"
+    aliases: []
+  forcefield:
+    command: "/forcefield"
+    aliases:
+    - "ff"
+  createkit:
+    command: "/createkit"
+    aliases: []
+  kit:
+    command: "/kit"
+    aliases: []
+  deletekit:
+    command: "/deletekit"
+    aliases: []
+  editkit:
+    command: "/editkit"
+    aliases: []
+  kits:
+    command: "/kits"
+    aliases: []
+  tempop:
+    command: "/tempop"
+    aliases: 
+    - "op"
+  ops:
+    command: "/ops"
+    aliases: []
+
+# Sneak Effect Settings
+# The players enabled for sneak effects
+enabled-users:
+  - Jxsh
+  - xJosh69
+
+# Spawn Location
+spawn: {}
+
+# Drop item
+drop-item-type: POPPY # The item that drops on sneak
+drop-item-name: <white>%luckperms_suffix%%player_name% <gray>dropped a rose
+drop-item-enabled: false # Alternative toggle to disable drop item stays on the ground in seconds
+drop-duration-seconds: 5
+
+# Particles
+particle-type: HEART
+particle-count: 1
+particle-duration-seconds: 1
+
+# Chat Manager
+chat:
+  enabled: true
+  # If true, links in chat will automatically be made clickable
+  clickable-links: true
+  # The format for links (supports MiniMessage tags)
+  # %link% will be replaced by the actual URL
+  link-format: <yellow>%link%
+  
+  # Default chat format
+  format: <white>%luckperms_prefix%<gray>%player% <dark_gray>»</dark_gray> <#ccffff>%message%
+  
+  # Group formats - Key should match LuckPerms primary group or Vault group
+  group-formats:
+    Owner: <white>%luckperms_prefix%<gray>%player% <dark_gray>»</dark_gray> <#0adef7>%message%
+  
+  # Mention settings
+  mentions:
+    enabled: true
+    # The sound played to the mentioned player
+    sound: minecraft:entity.villager.ambient
+    volume: 1.0
+    pitch: 1.0
+    
+disabled-mentions: []
+
+buildmode:
+  enabled: true
+  database-file: buildmode_data.json
+  # If true, NO ONE can build/break unless in buildmode (or op/admin bypass)
+  deny-global-build: true
+  # If true, send a message when a player tries to build/break but is denied
+  send-deny-message: false
+
+# World Flags Defaults (Apply to all worlds unless overridden)
+world-flags:
+  destroy: true
+  place: true
+  pvp: true
+  invincible: false
+  spawnmobs: true
+  nomobs: false
+  antivoid: true
+  antivoid-level: -125
+  blockdecay: false
+  0tick: true
+  
+worlds: {}
+
+utility:
+  poopgun:
+    shoot-cooldown: 5 # Seconds
+    item:
+      material: DIAMOND_HOE
+      name: '&6&lPoop Gun'
+      poop-duration: "15" # Seconds
+      lore:
+        - '&7Right-click to shoot!'
+        - '&7Make them poop!'
+    sound: "minecraft:entity.player.burp"
+    volume: "100"
+    pitch: "0.1"
+

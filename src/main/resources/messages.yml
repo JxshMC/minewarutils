@@ -1,0 +1,232 @@
+config-version: 2
+
+# Command output message
+minewarutils-header: <gradient:#ccffff:#0adef7><b>Minewar-Utils<reset><yellow> [1.0] <gray>Developed by <red>Jxsh <gray>& <red>Jzsh
+
+# Join message config
+MOTD:
+- ''
+- <red>Configure me!
+- <gray>View messages.yml
+- ''
+
+# Command Messages
+commands:
+  # MinewarUtils Subcommands
+  reload: <#ccffff>Config files reload <green>Success
+  
+  sneak:
+    enabled: <#ccffff>Sneak mode <green>Enabled <#ccffff>for <#0adef7>%target%
+    disabled: <#ccffff>Sneak mode <red>Disabled <#ccffff>for <#0adef7>%target%
+    already-enabled: <#ccffff>Sneak mode is already enabled for <#0adef7>%target%
+    not-enabled: <#0adef7>%target% <#ccffff> Does not have sneak features.
+  
+  # Core commands  
+  top: <#ccffff>Teleported to the <#0adef7>top
+  bottom: <#ccffff>Teleported to the <#0adef7>bottom
+  heal:
+    self: <#ccffff>You have been <#0adef7>healed
+    target: <#ccffff>You have healed %suffix_other%%target%
+  eat:
+    self: <#ccffff>You have been <#0adef7>fed
+    target: <#ccffff>You have fed %suffix_other%%target%
+  fly:
+    enabled: <#ccffff>Flight <#0adef7>enabled
+    disabled: <#ccffff>Flight <red>Disabled
+    target-enabled: <#ccffff>Flight <#0adef7>enabled <#ccffff>for %suffix_other%%target%
+    target-disabled: <#ccffff>Flight <red>Disabled <#ccffff>for %suffix_other%%target%
+  flyspeed:
+    self: <#ccffff>Flight speed set to <#0adef7>%speed%.
+    target: <#ccffff>Flight speed set to <#0adef7>%speed% <#ccffff>for %suffix_other%%target%.
+    usage: '<red>Usage: /flyspeed <0-10> [player]'
+    range: <red>Speed must be between 0 and 10.
+  gamemode:
+    self: <#ccffff>Your gamemode has been updated to <#0adef7>%gamemode%.
+    target: <#ccffff>Updated gamemode of %suffix_other%%target% <#ccffff>to <#0adef7>%gamemode%.
+  clear-inventory:
+    self: <#ccffff>Inventory cleared.
+    target: <#ccffff>Inventory cleared for %suffix_other%%target%.
+  give:
+    success: <#ccffff>Given <#0adef7>%amount%x <#ccffff>of <#0adef7>%material% <#ccffff>to %suffix_other%%player%.
+    usage: '<red>Usage: /give <item> [amount] [player] [custom name]'
+    invalid-item: '<red>Invalid item: %item%'
+  head:
+    success: <#ccffff>Given head of %suffix_other%%player%.
+    usage: '<red>Usage: /head <player>'
+  spawn:
+    set: <#ccffff>Spawn location set
+    teleport: <#ccffff>Teleported to spawn
+    other: <#ccffff>Teleported %suffix_other%%target% <#ccffff>to spawn
+  inventorysee:
+    usage: '<red>Usage: /inventorysee <player> [1|2]'
+  mutechat:
+    usage: '<red>Usage: /mutechat'
+  slowchat:
+    usage: '<red>Usage: /slowchat <seconds|off>'
+  clearchat:
+    usage: '<red>Usage: /clearchat'
+  mentiontoggle:
+    usage: '<red>Usage: /mentiontoggle'
+  poopgun:
+    usage: '<red>Usage: /poopgun [player]'
+    players-only: <red>Only players can use this command.
+  devarmour:
+    usage: '<red>Usage: /devarmour [player]'
+  
+  # Warp Messages
+  warps:
+    set: <#ccffff>Warp <#0adef7>%warp% <#ccffff>created
+    teleported: <#ccffff>Teleported to warp <#0adef7>%warp%
+    deleted: <#ccffff>Warp <#0adef7>%warp% <#ccffff>deleted
+    not-found: <#ccffff>Warp <#0adef7>%warp% <#ccffff>not found
+    none: '<#ccffff>Warps: <#0adef7>None'
+    list: '<#ccffff>Warps: <#0adef7>%warps%'
+    usage: '<red>Usage: /warp <name> [player]'
+    set-usage: '<red>Usage: /setwarp <name>'
+    delete-usage: '<red>Usage: /deletewarp <name>'
+    edit-usage: '<red>Usage: /editwarp <name>'
+    edited: <#ccffff>Warp <#0adef7>%warp% <#ccffff>updated
+  
+  # Item Customization Messages
+  itemname:
+    success: <#ccffff>Item name updated
+    usage: '<red>Usage: /itemname <name>'
+    no-item: <red>You must be holding an item
+  
+  lore:
+    added: <#ccffff>Lore line added
+    set: <#ccffff>Lore line <#0adef7>%line% <#ccffff>updated
+    cleared: <#ccffff>Item lore cleared
+    usage: '<red>Usage: /lore <add|set|clear> [args]'
+    invalid-line: <red>Invalid line number
+  
+  # Forcefield Messages
+  forcefield:
+    enabled: <#ccffff>Forcefield <green>Enabled
+    disabled: <#ccffff>Forcefield <red>Disabled
+  
+  # Kit Messages
+  kit:
+    created: <#ccffff>Kit <#0adef7>%kit% <#ccffff>created
+    created-usage: '<red>Usage: /createkit <name> [cooldown]'
+    usage: '<red>Usage: /kit <name> [player]'
+    received: <#ccffff>You received kit <#0adef7>%kit%
+    given: <#ccffff>Given kit <#0adef7>%kit% <#ccffff>to %suffix_other%%target%
+    not-found: <#ccffff>Kit <#0adef7>%kit% <#ccffff>not found
+    exists: <red>Kit already exists
+    deleted: <#ccffff>Kit <#0adef7>%kit% <#ccffff>deleted
+    delete-usage: '<red>Usage: /deletekit <name>'
+    edited: <#ccffff>Kit <#0adef7>%kit% <#ccffff>updated
+    edit-usage: '<red>Usage: /editkit <name>'
+    cooldown: <#ccffff>You must wait <#0adef7>%time%s <#ccffff>before using this kit again
+    list: '<#ccffff>Kits: <#0adef7>%kits%'
+    none: '<#ccffff>Kits: <#0adef7>None'
+  
+  # Op Manager Messages
+  op-manager:
+    grant: <#ccffff>You were opped by %suffix_other%%target%
+    grant-sender: <#ccffff>Temporarily opped %suffix_other%%target%
+    revoke: <#ccffff>You were deopped by %suffix_other%%target%
+    sponsor-left: '#ccffff>You have been deopped because %suffix_other%%target% <#ccffff>has logged out'
+    already-op: '%suffix_other%%target% <red>is already opped.'
+    ops-list-format:
+      name-format:
+        sorting_placeholders:
+        - '%role_weight%'
+        - '%username_lower%'
+        perm-ops: <white>%suffix_other%%player%
+        temp-ops: <reset>%suffix_other%%player% <#ccffff>[%tempop_time_left%]<gray>, 
+      header:
+      - <#0adef7>Currently opped users
+      - ''
+      - '<gray>Permanent OPs:'
+      middle:
+      - ''
+      - '<gray>Temporary OPs:'
+      footer:
+      - ''
+  
+  # Temp-OP Command Messages
+  tempop:
+    usage: '<red>Usage: /tempop <player> [perm|time] | /tempop remove <player>'
+    revoke-sender: <#ccffff>You deopped %suffix_other%%target%.
+    granted: <#ccffff>You have granted TempOp to %suffix_other%%target% <#ccffff>for <#0adef7>%time%
+    granted-target: <#ccffff>You have been granted TempOp for <#0adef7>%time%
+    time-left-format: "%days%d, %hours%h, %minutes%m, %seconds%s"
+  
+  error:
+    no-permission: <red>You do not have permission to use this command.
+    others-no-permission: <red>You don't have permission to use this command on other players
+    no-console: <red>Console must specify a player name.
+    players-only: <red>This command can only be used by players.
+    usage: '<red>Usage: %usage%'
+    invalid-player: <#ccffff>The player <#0adef7>%target% <#ccffff>was not found.
+    invalid-number: '<red>Invalid number: <#0adef7>%input%'
+    no-safe-location: <#ccffff>Failed to find a safe location below you
+    unknown-subcommand: '<red>Usage: /minewarutils <reload|sneak|world|help>'
+
+on-crouch: ''
+
+# World Setting Messages
+world-setting-set: <#ccffff>Set <#0adef7>%setting% <#ccffff>to <#0adef7>%value% <#ccffff>for world <#0adef7>%world%
+world-nomobs-fail: <#ccffff>You must <red>disable <#0adef7>SpawnMobs <#ccffff>before disabling all mob spawning.
+world-unknown-setting: '<red>Unknown setting: %setting%'
+world-missing-value: <red>Invalid setting or value.
+world-invalid-level: '<red>Invalid world: %value%'
+world-usage: '<red>Usage: /minewarutils world [world] <setting> <value> [level]'
+world-console-specify: <red>Console must specify world
+world-deny-msg: <#ccffff>Building is currently <red>Disabled. # Consolidated from buildmode.cant-break or similar
+
+# Build Mode Messages
+buildmode:
+  enabled: <#ccffff>Restricted Build Mode <green>Enabled.
+  disabled: <#ccffff>Restricted Build Mode <red>Disabled.
+  cant-break: <#ccffff>You are in restricted buildmode and cannot edit the original map.
+  global-deny: <#ccffff>Building is currently <red>Disabled.
+  reset: <#ccffff>Reset <#0adef7>%count% blocks <#ccffff>placed in Build Mode.
+  admin-enabled: <dark_red>[ADMIN] <#ccffff>Unrestricted Build Mode <green>Enabled.
+  admin-disabled: <dark_red>[ADMIN] <#ccffff>Unrestricted Build Mode <red>Disabled.
+  enabled-other: <#ccffff>Restricted Build Mode <green>Enabled <#ccffff>for %suffix_other%%target%.
+  disabled-other: <#ccffff>Restricted Build Mode <red>Disabled <#ccffff>for %suffix_other%%target%.
+  admin-enabled-other: <dark_red>[ADMIN] <#ccffff>Unrestricted Build Mode <green>Enabled <#ccffff>for %suffix_other%%target%
+  admin-disabled-other: <dark_red>[ADMIN] <#ccffff>Unrestricted Build Mode <red>Disabled <#ccffff>for %suffix_other%%target%
+
+# Chat Control Messages
+chat-control:
+  mute-enabled: <#ccffff>Global chat has been <red>muted <#ccffff>by %suffix_other%%player_name%
+  mute-disabled: <#ccffff>Global chat has been <green>unmuted <#ccffff>by %suffix_other%%player_name%
+  mute-active: <#ccffff>Chat is currently <red>Muted.
+  slow-mode-enabled: '%suffix_other%%player_name% <#ccffff>Has slowed the chat for <#0adef7>%seconds%s'
+  slow-mode-disabled: '%suffix_other%%player_name% <#ccffff>Has unslowed the chat'
+  slow-mode-active: <#ccffff>Chat is currently <red>slowed. <#ccffff>Please wait <#0adef7>%seconds%s <#ccffff>before sending another message
+  clear-chat: <#ccffff>The chat has been <red>cleared <#ccffff>by %suffix_other%%player%
+  clear-chat-lines: !!int "100"
+
+# Join/Quit Formats
+join-quit:
+  join-format: <white>%suffix_other%%player% <#ccffff>has joined the lobby
+  quit-format: <white>%suffix_other%%player% <#ccffff>has left the lobby
+
+# Mention Settings 
+mentions:
+  format: <reset>%suffix_other%%player%
+  enabled: <#ccffff>You have <green>Enabled <#0adef7>Chat Mentions
+  disabled: <#ccffff>You have <red>Disabled <#0adef7>Chat Mentions
+
+# Feature Messages
+poopgun:
+  receive: <#ccffff>You received the <#0adef7>Poop Gun
+  receive-other: <#ccffff>You gave the <#0adef7>Poop Gun <#ccffff>to %suffix_other%%target%.
+  already-pooping: '%suffix_other%%target% <#ccffff>is already pooping'
+  hit-target: <#ccffff>You made %suffix_other%%target% <#ccffff>shit themselves
+  hit-by: <#ccffff>Uh oh! You were hit by the <#0adef7>Poop Gun.
+  poop-name: '%suffix_other%%target%''s shit'
+
+dev:
+  armour-on: <#ccffff>Dev armour <green>enabled.
+  armour-off: <#ccffff>Dev armour <red>disabled.
+  armour-on-other: <#ccffff>Dev armour <green>enabled <#ccffff>for %suffix_other%%target%.
+  armour-off-other: <#ccffff>Dev armour <red>disabled <#ccffff>for %suffix_other%%target%.
+invalid-player: <red>The player <#0adef7>%target% <#ccffff>was not found.
+
+

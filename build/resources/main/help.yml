@@ -1,0 +1,176 @@
+config-version: 1
+help:
+  header: <gradient:#ccffff:#0adef7><b>Minewar</b> Help <#0adef7>(Page %page%/%total%)
+  footer: <#ccffff>Use <#0adef7>/help <page> <#ccffff>to view the next page.
+  line-format: <#0adef7>%command% <dark_gray>» <#ccffff>%description%
+  lines-per-page: 10
+
+manual-entries:
+- command: /minewarutils
+  description: Primary Paper utility command
+  default: true
+- command: /minewarvelocity
+  description: Primary Proxy utility command
+  default: true
+- command: /help [page]
+  description: View available commands
+  default: true
+- command: /mentiontoggle
+  description: Toggle chat mention alerts
+  default: true
+- command: /spawn
+  description: Warp to world spawn
+  default: true
+- command: /flyspeed <0-10> [player]
+  description: Adjust flight movement speed
+  default: true
+- command: /warp
+  description: Teleport to a saved location
+  default: true
+- command: /kit
+  description: View or claim item kits
+  default: true
+- command: /seen
+  description: Check a players last login
+  default: true
+- command: /list
+  description: View all online players
+  default: true
+- command: /msg
+  description: Send a private message
+  default: true
+- command: /reply
+  description: Reply to latest message
+  default: true
+- command: /togglepm
+  description: Enable or disable private messages
+  default: true
+- command: /ignore
+  description: Block messages from a player
+  default: true
+- command: /unignore
+  description: Unblock messages from a player
+  default: true
+- command: /find
+  description: Locate player's current server
+  default: true
+- command: /server
+  description: Execute server-specific actions
+  default: true
+- command: /discord <link|unlink>
+  description: Connect Minecraft to Discord
+  default: true
+
+- command: /poopgun [player]
+  description: Give a fun poop gun
+  default: false
+- command: /devarmour [player]
+  description: Toggle developer armor set
+  default: false
+- command: /fly [player]
+  description: Toggle player flight mode
+  default: false
+- command: /head <player>
+  description: Obtain a player's skull
+  default: false
+- command: /buildmode [player]
+  description: Toggle restricted building
+  default: false
+
+- command: /vanish
+  description: Become invisible to players
+  default: false
+- command: /top
+  description: Teleport to highest surface
+  default: false
+- command: /bottom
+  description: Teleport to lowest safe block
+  default: false
+- command: /firstjoin
+  description: View player's original join date
+  default: false
+- command: /socialspy
+  description: Monitor private player messages
+  default: false
+- command: /staffchat
+  description: Hidden channel for staff
+  default: false
+- command: /whois
+  description: View detailed player statistics
+  default: false
+- command: /clearchat
+  description: Wipe global chat history
+  default: false
+- command: /slowchat <seconds>
+  description: Limit chat message frequency
+  default: false
+- command: /inventorysee [player]
+  description: Open another player's inventory
+  default: false
+
+- command: /minewarutils world [world] <setting> <value>
+  description: Modify world-specific settings
+  default: false
+- command: /setspawn
+  description: Define world spawn point
+  default: false
+- command: /heal [player]
+  description: Restore health and hunger
+  default: false
+- command: /eat [player]
+  description: Fully restore hunger bar
+  default: false
+- command: /gamemode <mode> [player]
+  description: Update player game mode
+  default: false
+- command: /gmc [player]
+  description: Switch to Creative mode
+  default: false
+- command: /gms [player]
+  description: Switch to Survival mode
+  default: false
+- command: /gma [player]
+  description: Switch to Adventure mode
+  default: false
+- command: /gmsp [player]
+  description: Switch to Spectator mode
+  default: false
+- command: /clearinventory [player]
+  description: Wipe all items from inventory
+  default: false
+- command: /give <item> [amount] [player]
+  description: Spawn items into inventory
+  default: false
+- command: /itemname <name>
+  description: Change held item's name
+  default: false
+- command: /lore <set|add|remove> <line> <text>
+  description: Modify held item's lore
+  default: false
+- command: /editwarp <name>
+  description: Update an existing warp
+  default: false
+- command: /deletewarp <name>
+  description: Remove a saved warp
+  default: false
+- command: /createkit <name> <cooldown>
+  description: Save inventory as a kit
+  default: false
+- command: /editkit <name>
+  description: Modify an existing kit
+  default: false
+- command: /deletekit <name>
+  description: Remove a saved kit
+  default: false
+- command: /alert
+  description: Broadcast a network-wide alert
+  default: false
+- command: /proxyrestart
+  description: Safely reboot the proxy
+  default: false
+- command: /tempop <grant|remove> <player>
+  description: Manage temporary operator status
+  default: false
+- command: /ops
+  description: List all server operators
+  default: false
