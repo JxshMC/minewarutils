@@ -1,6 +1,5 @@
 package com.jxsh.misc;
 
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import me.clip.placeholderapi.PlaceholderAPI;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -16,16 +15,19 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ScoreboardManager implements Listener {
 
     private final JxshMisc plugin;
-    // private File configFile; // Removed
 
     // Config values
     private boolean enabled;
@@ -33,7 +35,8 @@ public class ScoreboardManager implements Listener {
     private List<String> lines;
     private int updateInterval;
     private Map<String, String> customPlaceholders;
-    private Map<String, Map<String, String>> conditionalReplacements;
+    // Dynamic Placeholders configuration
+    private Map<String, String> dynamicTempOp; // Stores config for temp-op
 
     private BukkitTask updateTask;
     private final Map<UUID, Scoreboard> playerScoreboards = new HashMap<>();
@@ -43,7 +46,6 @@ public class ScoreboardManager implements Listener {
         loadConfig();
     }
 
-    @SuppressWarnings("unchecked")
     public void loadConfig() {
         try {
             dev.dejvokep.boostedyaml.YamlDocument config = plugin.getConfigManager().getScoreboard();
@@ -67,30 +69,18 @@ public class ScoreboardManager implements Listener {
                 }
             }
 
-            conditionalReplacements = new HashMap<>();
-            if (config.isSection("Replacements")) {
-                dev.dejvokep.boostedyaml.block.implementation.Section replSection = config.getSection("Replacements");
-                for (Object key : replSection.getKeys()) {
-                    String baseKey = key.toString();
-                    if (replSection.isSection(Route.from(key))) {
-                        dev.dejvokep.boostedyaml.block.implementation.Section inner = replSection
-                                .getSection(Route.from(key));
-                        Map<String, String> stringMap = new HashMap<>();
-                        for (Object innerKeyObj : inner.getKeys()) {
-                            String innerKey = innerKeyObj.toString();
-                            String innerVal = inner.getString(Route.from(innerKeyObj), "");
-                            stringMap.put(innerKey, innerVal);
-                        }
-                        conditionalReplacements.put(baseKey, stringMap);
-                    }
+            // Load dynamic-placeholders section
+            dynamicTempOp = new HashMap<>();
+            if (config.isSection("dynamic-placeholders.temp-op")) {
+                dev.dejvokep.boostedyaml.block.implementation.Section section = config
+                        .getSection("dynamic-placeholders.temp-op");
+                for (Object key : section.getKeys()) {
+                    dynamicTempOp.put(key.toString(), section.getString(Route.from(key)));
                 }
-                plugin.getLogger().info("Scoreboard: Successfully loaded config (Replacements: "
-                        + conditionalReplacements.size() + ")");
             }
 
             if (enabled) {
                 startTask();
-                // Refresh for online players
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     setupScoreboard(player);
                 }
@@ -141,12 +131,9 @@ public class ScoreboardManager implements Listener {
     private void setupScoreboard(Player player) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective objective = scoreboard.registerNewObjective("sidebar", Criteria.DUMMY,
-                MiniMessage.miniMessage().deserialize(title));
+                MiniMessage.miniMessage().deserialize(title)); // Initial title, updated dynamically later
 
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        // Hide numbers globally for this objective
-        objective.numberFormat(NumberFormat.blank());
 
         player.setScoreboard(scoreboard);
         playerScoreboards.put(player.getUniqueId(), scoreboard);
@@ -160,151 +147,177 @@ public class ScoreboardManager implements Listener {
 
         Objective objective = scoreboard.getObjective("sidebar");
         if (objective == null)
-            return; // Should not happen
+            return;
 
-        // Update title with placeholders (if title has placeholders, though usually
-        // static/animated titles need specific handling)
-        // Ideally we assume title is static or handled elsewhere for animations, but
-        // basic placeholder support:
-        String parsedTitle = applyConditionalReplacements(title, player);
-        parsedTitle = applyCustomPlaceholders(parsedTitle);
+        // Update Title
+        String parsedTitle = applyPlaceholders(title, player);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             parsedTitle = PlaceholderAPI.setPlaceholders(player, parsedTitle);
         }
         objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));
 
-        // Update lines
-        // We use a score-based system where line 0 is at the top (highest score) or
-        // bottom?
-        // Standard sidebar: Score 15 is top, Score 1 is bottom.
-        // Array index 0 should be top.
-        // So line 0 -> Score 15 (or size of list)
-        // line 1 -> Score 14...
-
-        int scoreValue = lines.size();
+        // Process Lines (Dynamic Logic)
+        List<String> processedLines = new ArrayList<>();
 
         for (String line : lines) {
-            if (scoreValue <= 0)
-                break;
-
-            String parsedLine = applyConditionalReplacements(line, player);
-            parsedLine = applyCustomPlaceholders(parsedLine);
-            if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                parsedLine = PlaceholderAPI.setPlaceholders(player, parsedLine);
+            // 1. {temp-op} Handler
+            if (line.contains("{temp-op}")) {
+                if (!processTempOpLine(line, player, processedLines)) {
+                    continue; // Line removed
+                }
+                // processTempOpLine handles adding to processedLines if valid
+            } else {
+                // Normal line processing
+                String processed = applyPlaceholders(line, player);
+                if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                    processed = PlaceholderAPI.setPlaceholders(player, processed);
+                }
+                processNewline(processed, processedLines);
             }
-
-            // Using team entries allows for longer lines and anti-flicker, but for modern
-            // versions
-            // resetting scores matches entries by name.
-            // Since we want to hide numbers, we just set the score.
-            // However, to update text dynamically without flicker, relying on just scores
-            // and resetting them is one way.
-            // A better way is using Teams, but let's stick to simple Score setting for
-            // simplicity as requested,
-            // unless flicker is an issue. With modern clients/server, updating scores is
-            // relatively cheap.
-            // BUT, to change the TEXT of a line, we actually have to remove the old score
-            // and add a new one
-            // because the text IS the entry name.
-
-            // To do this simply:
-            // Designate "lines" by specific fake player names (or invisible characters) and
-            // use Teams to set prefix/suffix?
-            // OR just clear all entries and re-add them.
-
-            // For this implementation, I will treat the entry string AS the display text.
-            // NOTE: If two lines are identical, they will conflict.
-            // To fix duplicates, we can append unseen color codes.
-
-            updateLine(scoreboard, objective, scoreValue, parsedLine);
-
-            scoreValue--;
         }
 
-        // Clean up any extra scores if lines size decreased (unlikely for static config
-        // but good practice)
-        // This simple implementation relies on fixed size mostly.
+        // Assign Scores (Reverse Loop)
+        // Score 15 (Top) -> Score 1 (Bottom)
+        // Adjust scores based on list size
+        int score = processedLines.size();
+
+        // Clean up old teams/entries to prevent ghosts?
+        // Ideally we assume max lines 15. We can clear scores < current size?
+        // Or cleaner: Reset all scores/teams.
+        // For performance, we update existing teams.
+        // We need to clear scores that are no longer used (e.g. if list shrank).
+
+        for (String entry : scoreboard.getEntries()) {
+            if (objective.getScore(entry).getScore() > processedLines.size()) {
+                scoreboard.resetScores(entry);
+            }
+        }
+
+        // Since we map lines to scores 1..N, we can just overwrite.
+        // But if we had 10 lines and now 9, score 10 needs to be removed.
+        // Better: Clear all scores for this objective? No, that flickers.
+
+        // We iterate 15 down to 1.
+        for (int i = 0; i < 15; i++) {
+            // If we have a line for this slot (index = i from top?)
+            // Standard: index 0 is top line -> Highest Score.
+            int lineIndex = i;
+            int currentScore = processedLines.size() - i;
+
+            if (lineIndex < processedLines.size()) {
+                updateLine(scoreboard, objective, currentScore, processedLines.get(lineIndex));
+            } else {
+                // Remove this score/line if it exists
+                removeLine(scoreboard, currentScore);
+            }
+        }
     }
 
-    // Helper to genericize line updating using Teams for anti-flicker and support
-    // for same-content lines
+    // Returns false if line should be removed
+    private boolean processTempOpLine(String line, Player player, List<String> output) {
+        String timeLeft = "";
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            timeLeft = PlaceholderAPI.setPlaceholders(player, "%tempop_time_left%");
+        }
+
+        // Check dynamic placeholders config
+        String replacement = null;
+
+        // Logic:
+        // 1. Exact Match (e.g. "Expire-Relog")
+        if (dynamicTempOp != null && dynamicTempOp.containsKey(timeLeft)) {
+            replacement = dynamicTempOp.get(timeLeft);
+        } else {
+            // 2. Regex Match for Time (d, h, m, s)
+            // "If output contains a time pattern... replace with 'Expires in...'"
+            // We check checks if it contains digits followed by d/h/m/s
+            if (timeLeft.matches(".*\\d+[dhms].*")) {
+                // It's a time. Use "time" key from config if exists, or default?
+                // User said: "replace {temp-op} with the 'Expires in...' string"
+                // I assume there's a key in config for this case?
+                // Let's assume key is "time-format" or similar?
+                // Or maybe the user meant "If output contains time... replace with the
+                // formatted string ITSELF"?
+                // "replace {temp-op} with the 'Expires in...' string" implies a specific string
+                // from config.
+                // Let's look for a key called "active" or "time" in
+                // dynamic-placeholders.temp-op
+                if (dynamicTempOp != null && dynamicTempOp.containsKey("active")) {
+                    replacement = dynamicTempOp.get("active").replace("%time%", timeLeft);
+                } else {
+                    // Fallback: Just display the time?
+                    replacement = timeLeft;
+                }
+            }
+        }
+
+        if (replacement == null) {
+            // "Line Removal: If ... does not match ... remove"
+            return false;
+        }
+
+        String processed = line.replace("{temp-op}", replacement);
+        processed = applyPlaceholders(processed, player);
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            processed = PlaceholderAPI.setPlaceholders(player, processed);
+        }
+
+        processNewline(processed, output);
+        return true;
+    }
+
+    private void processNewline(String line, List<String> output) {
+        if (line.contains("{newline}")) {
+            String[] parts = line.split("\\{newline\\}");
+            for (String part : parts) {
+                // "If text after {newline}, display it... otherwise blank spacer"
+                // Split handles this. "Text{newline}" -> ["Text", ""] (if limit is negative)
+                // String.split(regex) discards trailing empty strings by default.
+                // We want to keep them.
+                output.add(part);
+            }
+        } else if (line.contains("\\n")) { // support \n just in case
+            String[] parts = line.split("\\\\n");
+            for (String part : parts)
+                output.add(part);
+        } else {
+            output.add(line);
+        }
+    }
+
     private void updateLine(Scoreboard sb, Objective obj, int score, String text) {
         String teamName = "line_" + score;
-        org.bukkit.scoreboard.Team team = sb.getTeam(teamName);
+        Team team = sb.getTeam(teamName);
         if (team == null) {
             team = sb.registerNewTeam(teamName);
-            // Create a unique entry for this score so it persists
-            // Use invisible chars or color codes to ensure uniqueness
-            String entry = getUniqueEntry(score);
+            String entry = "§" + Integer.toHexString(score); // Unique entry
             team.addEntry(entry);
             obj.getScore(entry).setScore(score);
         }
-
+        // Update prefix
+        // Handle Legacy + MiniMessage mixed? Use serializer?
+        // text likely contains MiniMessage tags.
         team.prefix(MiniMessage.miniMessage().deserialize(text));
     }
 
-    private String applyCustomPlaceholders(String text) {
-        if (customPlaceholders == null || customPlaceholders.isEmpty()) {
-            return text;
+    private void removeLine(Scoreboard sb, int score) {
+        String teamName = "line_" + score;
+        Team team = sb.getTeam(teamName);
+        if (team != null) {
+            for (String entry : team.getEntries()) {
+                sb.resetScores(entry);
+            }
+            team.unregister();
         }
-        String result = text;
-        for (Map.Entry<String, String> entry : customPlaceholders.entrySet()) {
-            result = result.replace(entry.getKey(), entry.getValue());
-        }
-        return result;
     }
 
-    private String applyConditionalReplacements(String text, Player player) {
-        if (conditionalReplacements == null || conditionalReplacements.isEmpty()) {
-            return text;
-        }
-
+    private String applyPlaceholders(String text, Player player) {
         String result = text;
-        for (Map.Entry<String, Map<String, String>> entry : conditionalReplacements.entrySet()) {
-            String placeholder = entry.getKey();
-            Map<String, String> replacements = entry.getValue();
-
-            // Check if line contains this placeholder
-            if (result.contains(placeholder)) {
-                // Resolve the placeholder value
-                String resolvedValue = "";
-                if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    resolvedValue = PlaceholderAPI.setPlaceholders(player, placeholder);
-                }
-
-                // Prepare lookup key
-                String lookup = resolvedValue == null ? "" : resolvedValue;
-
-                // Strip legacy colors and MiniMessage tags to check if it's truly "empty"
-                String stripped = lookup.replaceAll("§[0-9a-fk-orx]", "")
-                        .replaceAll("&[0-9a-fk-orx]", "")
-                        .replaceAll("<[^>]*>", "");
-                boolean isPlaceholderEmpty = lookup.isEmpty() || stripped.trim().isEmpty()
-                        || lookup.equalsIgnoreCase("null");
-
-                // Look for replacement
-                if (replacements.containsKey(lookup)) {
-                    // Exact match
-                    String replacement = replacements.get(lookup);
-                    result = result.replace(placeholder, replacement);
-                } else if (isPlaceholderEmpty && (replacements.containsKey("") || replacements.containsKey("none"))) {
-                    // Specific fallback for empty
-                    String keyToUse = replacements.containsKey("") ? "" : "none";
-                    String replacement = replacements.get(keyToUse);
-                    result = result.replace(placeholder, replacement);
-                }
+        if (customPlaceholders != null) {
+            for (Map.Entry<String, String> entry : customPlaceholders.entrySet()) {
+                result = result.replace(entry.getKey(), entry.getValue());
             }
         }
         return result;
-    }
-
-    private String getUniqueEntry(int index) {
-        // Just use a color code string based on index to ensure it's hidden/unique
-        // ChatColor is deprecated in favor of adventure, but for legacy string entries
-        // we need legacy colors or just unique strings.
-        // We can just use "§[0-9/a-f/r]" combinations or similar.
-        // Or simpler: just standard color codes.
-        // 0-15 lines.
-        return "§" + Integer.toHexString(index);
     }
 }

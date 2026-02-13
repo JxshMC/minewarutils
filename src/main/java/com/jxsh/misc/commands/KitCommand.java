@@ -88,8 +88,6 @@ public class KitCommand extends BaseCommand {
         }
     }
 
-    }
-
     private void listKits(Player player) {
         Set<String> kits = plugin.getKitManager().getKits();
 
