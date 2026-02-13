@@ -806,10 +806,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         return processed;
     }
 
-    private String formatDuration(long seconds) { // Legacy fallback
-        return formatDurationConfigurable(seconds, "%days%d, %hours%h, %minutes%m, %seconds%s");
-    }
-
     private String formatDurationConfigurable(long totalSeconds, String format) {
         long days = totalSeconds / 86400;
         long hours = (totalSeconds % 86400) / 3600;
