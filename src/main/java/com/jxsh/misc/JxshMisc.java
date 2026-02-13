@@ -214,6 +214,9 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         if (configManager.isFeatureEnabled("poopgun")) {
             getServer().getPluginManager().registerEvents(new com.jxsh.misc.listeners.PoopGunListener(this), this);
         }
+        if (configManager.isFeatureEnabled("MOTD")) {
+            getServer().getPluginManager().registerEvents(new com.jxsh.misc.listeners.MOTDListener(this), this);
+        }
         if (configManager.isFeatureEnabled("tempop")) {
             getServer().getPluginManager()
                     .registerEvents(new com.jxsh.misc.listeners.TempOpListener(this, tempOpManager), this);
@@ -253,6 +256,9 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         }
         if (tempOpManager != null) {
             tempOpManager.shutdown();
+        }
+        if (databaseManager != null) {
+            databaseManager.close();
         }
 
         // Nullify managers to ensure GC and fresh init

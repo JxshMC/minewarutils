@@ -80,15 +80,32 @@ public class SpawnManager implements Listener {
         }
 
         // Join Message Logic
-        if (!plugin.getConfigManager().getConfig().getBoolean("join-messages.enabled", true)) {
+        boolean vanillaEnabled = plugin.getConfigManager().getConfig().getBoolean("features.join-messages", true);
+        boolean customEnabled = plugin.getConfigManager().getConfig().getBoolean("features.custom-join-messages",
+                false);
+
+        if (!vanillaEnabled) {
             event.joinMessage(null);
-        } else if (plugin.getConfigManager().getConfig().getBoolean("join-messages.custom-message.enabled", false)) {
+        }
+
+        if (customEnabled) {
+            // If vanilla is enabled, we might duplicate? Usually custom replaces vanilla.
+            // Strict logic: If custom is enabled, we send custom. Does it replace?
+            // "joinMessage(component)" sets the message. If we set it, it overrides
+            // vanilla.
+            // If vanilla is disabled (null), setting it again makes it show.
+            // So logic:
+            // if (custom) -> set custom.
+            // else if (!vanilla) -> set null.
+
             String format = plugin.getConfigManager().getMessages().getString("join-quit.join-format",
                     "<yellow>%player% joined the game");
 
             net.kyori.adventure.text.Component component = plugin
                     .parseText(format.replace("%player%", player.getName()), player);
             event.joinMessage(component);
+        } else if (!vanillaEnabled) {
+            event.joinMessage(null);
         }
 
         // OnJoin (Rejoin)
@@ -102,16 +119,19 @@ public class SpawnManager implements Listener {
     public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        // Join messages toggle controls both join and quit messages
-        if (!plugin.getConfigManager().getConfig().getBoolean("join-messages.enabled", true)) {
-            event.quitMessage(null);
-        } else if (plugin.getConfigManager().getConfig().getBoolean("join-messages.custom-message.enabled", false)) {
+        boolean vanillaEnabled = plugin.getConfigManager().getConfig().getBoolean("features.join-messages", true);
+        boolean customEnabled = plugin.getConfigManager().getConfig().getBoolean("features.custom-join-messages",
+                false);
+
+        if (customEnabled) {
             String format = plugin.getConfigManager().getMessages().getString("join-quit.quit-format",
                     "<yellow>%player% left the game");
 
             net.kyori.adventure.text.Component component = plugin
                     .parseText(format.replace("%player%", player.getName()), player);
             event.quitMessage(component);
+        } else if (!vanillaEnabled) {
+            event.quitMessage(null);
         }
     }
 
