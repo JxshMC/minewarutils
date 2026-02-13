@@ -154,7 +154,7 @@ commands:
     revoke-sender: "<green>TempOp revoked from %target%."
     time-left-format: "%days%d, %hours%h, %minutes%m, %seconds%s"
     time-left-perm: "Permanent"
-    time-left-temp: "Expire-Relog"
+    time-left-temp: "Temporary"
     no-time: "N/A"
     join-notify: "<#ccffff>You currently have <#0adef7>%tempop_time_left% <#ccffff>left of TempOp."
   

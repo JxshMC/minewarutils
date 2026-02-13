@@ -1,6 +1,6 @@
 name: Minewar-Utils
 version: 1.0.1
-description: "Core commands and utilities"
+description: "Essential server utilities, chat management, and quality-of-life enhancements"
 main: com.jxsh.misc.JxshMisc
 api-version: 1.20
 authors: [Jxsh]
