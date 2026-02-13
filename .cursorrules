@@ -1,0 +1,6 @@
+# MANDATORY PROJECT RULES
+1. PROTOCOL: ALWAYS read instructions.md before proposing any plan or modifying code.
+2. ZERO HARDCODING: No messages, permissions, or formats in Java. Everything must be fetched from YAML configs.
+3. VERSIONING: Increment config-version in source YAML files on every configuration change.
+4. OVERRIDE: Our custom /help and /deop must take priority over vanilla Minecraft/Paper commands.
+5. PLACEHOLDERS: %tempop_time_left% must handle 'Permanent', 'Expire-Relog', and 'Timed' states specifically.
