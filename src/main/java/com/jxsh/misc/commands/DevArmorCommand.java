@@ -17,7 +17,7 @@ public class DevArmorCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(plugin.parseText(
                     plugin.getConfigManager().getMessages().getString("commands.error.players-only",

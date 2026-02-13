@@ -11,7 +11,7 @@ public class MentionToggleCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
         plugin.toggleMention(player.getUniqueId());
         boolean enabled = plugin.isMentionEnabled(player.getUniqueId());

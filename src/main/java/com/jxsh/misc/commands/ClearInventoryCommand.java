@@ -11,7 +11,7 @@ public class ClearInventoryCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player target = resolveTarget(sender, args, 0);
         if (target == null)
             return;

@@ -15,7 +15,7 @@ public class SlowChatCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (args.length == 0) {
             sender.sendMessage(
                     plugin.parseText(plugin.getConfigManager().getMessages().getString("commands.slowchat.usage"),

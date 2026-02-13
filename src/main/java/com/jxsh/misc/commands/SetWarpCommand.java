@@ -17,7 +17,7 @@ public class SetWarpCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (args.length < 1) {
             sender.sendMessage(plugin.parseText(
                     plugin.getConfigManager().getMessages().getString("commands.warps.set-usage"), (Player) sender));

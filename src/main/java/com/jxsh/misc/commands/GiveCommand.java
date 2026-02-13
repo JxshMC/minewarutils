@@ -17,7 +17,7 @@ public class GiveCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Usage: /give <item> [amount] [player] [name...]
         if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.parseText(

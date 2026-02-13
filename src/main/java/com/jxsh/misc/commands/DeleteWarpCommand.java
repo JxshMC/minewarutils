@@ -17,7 +17,7 @@ public class DeleteWarpCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender; // BaseCommand enforces IsPlayer=true
 
         if (args.length < 1) {

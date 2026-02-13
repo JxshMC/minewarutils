@@ -16,7 +16,7 @@ public class GamemodeCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         GameMode mode = fixedMode;
         Player target = null;
 

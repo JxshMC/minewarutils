@@ -18,7 +18,7 @@ public class BuildModeAdminCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Permission check handled by BaseCommand ("minewar.buildmode.admin")
 
         Player target;

@@ -18,7 +18,7 @@ public class MinewarUtilsCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (args.length == 0) {
             // Display only the header message
             sender.sendMessage(plugin.parseText(

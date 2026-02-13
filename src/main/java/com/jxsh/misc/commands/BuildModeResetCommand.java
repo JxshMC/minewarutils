@@ -17,7 +17,7 @@ public class BuildModeResetCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Permission check handled by BaseCommand
 
         int count = 0;

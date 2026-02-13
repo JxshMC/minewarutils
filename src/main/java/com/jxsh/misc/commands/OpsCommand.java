@@ -24,7 +24,7 @@ public class OpsCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (!plugin.hasPermission((Player) sender, "ops.list")) {
             sender.sendMessage(
                     plugin.parseText(plugin.getConfigManager().getMessages().getString("commands.error.no-permission"),

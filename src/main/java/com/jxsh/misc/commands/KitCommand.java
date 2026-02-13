@@ -18,7 +18,7 @@ public class KitCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
         Player target = player;
 
@@ -86,5 +86,36 @@ public class KitCommand extends BaseCommand {
             sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages().getString("commands.kit.given")
                     .replace("%kit%", kitName).replace("%target%", target.getName()), player));
         }
+    }
+
+    }
+
+    private void listKits(Player player) {
+        Set<String> kits = plugin.getKitManager().getKits();
+
+        if (kits.isEmpty()) {
+            player.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages().getString("commands.kit.none"),
+                    player));
+            return;
+        }
+
+        String listFormat = plugin.getConfigManager().getMessages().getString("commands.kit.list");
+
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String kit : kits) {
+            sb.append("<click:run_command:/kit ").append(kit).append(">")
+                    .append("<hover:show_text:'<#ccffff>Click to get <#0adef7>").append(kit).append("'>")
+                    .append("<#0adef7>").append(kit)
+                    .append("</hover></click>");
+
+            if (i < kits.size() - 1) {
+                sb.append("<gray>, ");
+            }
+            i++;
+        }
+
+        String msg = listFormat.replace("%kits%", sb.toString());
+        player.sendMessage(plugin.parseText(msg, player));
     }
 }

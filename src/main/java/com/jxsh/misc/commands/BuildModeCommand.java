@@ -17,7 +17,7 @@ public class BuildModeCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Permission and console checks handled by BaseCommand
 
         Player target;

@@ -12,7 +12,7 @@ public class MuteChatCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Logic extracted from JxshMisc.onCommand
         boolean newState = !plugin.getChatManager().isChatMuted();
         plugin.getChatManager().setChatMuted(newState);

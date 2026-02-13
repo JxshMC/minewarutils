@@ -14,7 +14,7 @@ public class TopCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
         Location loc = player.getLocation();
         int topY = player.getWorld().getHighestBlockYAt(loc);

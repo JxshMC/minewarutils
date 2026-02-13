@@ -308,8 +308,9 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         commandManager.addExecutor("devarmour", new DevArmorCommand(this, devManager));
 
         commandManager.addExecutor("setwarp", new SetWarpCommand(this, warpManager));
-        commandManager.addExecutor("warp", new WarpCommand(this, warpManager));
-        commandManager.addExecutor("warps", new WarpsCommand(this, warpManager));
+        WarpCommand warpCmd = new WarpCommand(this, warpManager);
+        commandManager.addExecutor("warp", warpCmd);
+        commandManager.addExecutor("warps", warpCmd);
         commandManager.addExecutor("deletewarp", new DeleteWarpCommand(this, warpManager));
         commandManager.addExecutor("editwarp", new EditWarpCommand(this, warpManager));
         commandManager.addExecutor("itemname", new ItemNameCommand(this));
@@ -317,10 +318,11 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         commandManager.addExecutor("forcefield", new ForcefieldCommand(this, forcefieldManager));
 
         commandManager.addExecutor("createkit", new CreateKitCommand(this, kitManager));
-        commandManager.addExecutor("kit", new KitCommand(this, kitManager));
+        KitCommand kitCmd = new KitCommand(this, kitManager);
+        commandManager.addExecutor("kit", kitCmd);
         commandManager.addExecutor("deletekit", new DeleteKitCommand(this, kitManager));
         commandManager.addExecutor("editkit", new EditKitCommand(this, kitManager));
-        commandManager.addExecutor("kits", new KitsCommand(this));
+        commandManager.addExecutor("kits", kitCmd);
 
         commandManager.addExecutor("tempop", new TempOpCommand(this, tempOpManager));
         commandManager.addExecutor("tempop-remove", new DeopCommand(this, tempOpManager));

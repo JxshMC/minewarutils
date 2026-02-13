@@ -13,7 +13,7 @@ public class ClearChatCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         int lines = plugin.getConfigManager().getMessages().getInt("chat-control.clear-chat-lines", 100);
         Component blankLine = Component.text(" ");
 

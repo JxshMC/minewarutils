@@ -11,7 +11,7 @@ public class EatCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // Resolve target: arg 0 if present, else sender
         Player target = resolveTarget(sender, args, 0);
         if (target == null)

@@ -17,7 +17,7 @@ public class EditWarpCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
 
         if (args.length < 1) {

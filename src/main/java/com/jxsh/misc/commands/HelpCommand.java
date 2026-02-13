@@ -10,7 +10,7 @@ public class HelpCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (!plugin.getConfigManager().getConfig().getBoolean("help-system.enabled", true)) {
             // Respect legacy setting if present
             return;

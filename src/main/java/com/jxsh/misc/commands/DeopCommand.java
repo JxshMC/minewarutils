@@ -21,7 +21,7 @@ public class DeopCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         if (!sender.hasPermission("minewar.deop") && !sender.isOp()) { // Fallback perm check
             sender.sendMessage(plugin.parseText(
                     plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), null));

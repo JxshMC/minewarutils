@@ -53,11 +53,11 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        execute(sender, args);
+        execute(sender, args, label);
         return true;
     }
 
-    public abstract void execute(CommandSender sender, String[] args);
+    public abstract void execute(CommandSender sender, String[] args, String label);
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

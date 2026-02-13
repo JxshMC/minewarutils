@@ -15,7 +15,7 @@ public class SetSpawnCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
         spawnManager.setSpawn(player.getLocation());
         player.sendMessage(

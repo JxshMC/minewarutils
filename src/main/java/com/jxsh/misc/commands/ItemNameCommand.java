@@ -18,7 +18,7 @@ public class ItemNameCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
         ItemStack item = player.getInventory().getItemInMainHand();
 

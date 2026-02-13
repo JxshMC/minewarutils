@@ -22,7 +22,7 @@ public class PoopGunCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(CommandSender sender, String[] args, String label) {
         // BaseCommand handles invalid sender (console) checking via constructor super
         // call logic?
         // Wait, BaseCommand checks permission but handling the "player-only" part might
