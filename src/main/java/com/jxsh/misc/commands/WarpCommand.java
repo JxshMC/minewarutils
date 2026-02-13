@@ -28,7 +28,7 @@ public class WarpCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, String[] args, String label) {
         Player player = (Player) sender;
-        String label = "warp"; // Default
+
         // Try to get actual label if possible, though BaseCommand execute structure is
         // abstracted.
         // We will pass the alias in a future update or just use checking args for now?

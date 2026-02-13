@@ -1,4 +1,4 @@
-config-version: 1
+config-version: 2
 # Scoreboard Configuration for Minewar-Utils
 # Supports MiniMessage format (e.g. <gradient:red:blue>Text</gradient>)
 # Supports PlaceholderAPI placeholders
@@ -14,6 +14,7 @@ Scoreboard:
   - "{secondary_colour}👤 {primary_colour}Name <gray>%luckperms_suffix%%player_name%"
   - "{secondary_colour}👻 {primary_colour}Online {secondary_colour}%minewar_total%"
   - "{secondary_colour}<bold>ᯤ<reset> {primary_colour}Ping: {secondary_colour}%player_ping%"
+  - "{temp-op}"
   - ""
   - "<gray>--------------"
   - "  <gradient:#ccffff:#0adef7><b>ᴍɪɴᴇᴡᴀʀ.ɴᴇᴛ"
@@ -26,7 +27,13 @@ placeholders:
   # Server name included in title.
   "{lobby_name}": "ɴᴏᴛ ᴄᴏɴғɪɢᴜʀᴇᴅ"
 
-Replacements:
-  "%luckperms_prefix%":
-    # Displays "No Rank" if the user is default rank.
-    "": "No Rank"
+dynamic-placeholders:
+  temp-op:
+    # Logic:
+    # 1. PAPI %tempop_time_left% is checked.
+    # 2. If it matches a key below ("Expire-Relog"), that value is used.
+    # 3. If it matches a time pattern (d/h/m/s), "active" is used (%time% replaced).
+    # 4. If nothing matches (or empty), the line containing {temp-op} is REMOVED.
+    
+    active: "{secondary_colour}⭐ {primary_colour}OP Expires: {secondary_colour}%time%"
+    Expire-Relog: "{secondary_colour}⭐ {primary_colour}OP Expires: {secondary_colour}On Relog"
