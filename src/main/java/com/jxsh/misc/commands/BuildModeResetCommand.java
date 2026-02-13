@@ -35,7 +35,7 @@ public class BuildModeResetCommand extends BaseCommand {
             count = buildModeManager.resetPlayer(target);
             targetName = target.getName();
         } else {
-            count = buildModeManager.resetAllTrackedBlocks();
+            count = buildModeManager.resetAll();
         }
 
         String msg = plugin.getConfigManager().getMessages().getString("buildmode.reset",

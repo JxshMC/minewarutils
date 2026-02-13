@@ -70,7 +70,7 @@ public class WorldEditListener {
             BlockData data = BukkitAdapter.adapt(originalState);
 
             // Record original state
-            manager.recordChange(player, loc, data);
+            manager.recordChange(player, loc.getBlock(), data);
 
             // Proceed with the change
             return super.setBlock(location, block);

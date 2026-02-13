@@ -45,11 +45,11 @@ public class BuildModeAdminCommand extends BaseCommand {
         // Ensure they are in build mode first if enabling admin
         if (!buildModeManager.isAdminModeEnabled(target.getUniqueId())
                 && !buildModeManager.isBuildModeEnabled(target.getUniqueId())) {
-            buildModeManager.setBuildMode(target.getUniqueId(), true); // Force enable build mode
+            buildModeManager.setBuildModeEnabled(target, true); // Force enable build mode
         }
 
         boolean newState = !buildModeManager.isAdminModeEnabled(target.getUniqueId());
-        buildModeManager.setAdminMode(target.getUniqueId(), newState);
+        buildModeManager.setAdminMode(target, newState);
 
         if (newState) {
             target.sendMessage(

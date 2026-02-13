@@ -50,7 +50,7 @@ public class BuildModeCommand extends BaseCommand {
         }
 
         boolean newState = !buildModeManager.isBuildModeEnabled(target.getUniqueId());
-        buildModeManager.setBuildMode(target.getUniqueId(), newState);
+        buildModeManager.setBuildModeEnabled(target, newState);
 
         if (newState) {
             // Enable: Set to Creative mode

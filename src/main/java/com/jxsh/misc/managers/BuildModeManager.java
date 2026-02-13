@@ -1,11 +1,6 @@
 package com.jxsh.misc.managers;
 
-import com.google.gson.Gson;
 import com.jxsh.misc.JxshMisc;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.world.block.BlockState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -15,14 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BuildModeManager {
 
     private final JxshMisc plugin;
-    private final Gson gson;
 
     // Sets of UUIDs for player states
     private final Set<UUID> buildModePlayers = Collections.synchronizedSet(new HashSet<>());
@@ -36,7 +29,6 @@ public class BuildModeManager {
 
     private boolean dirty = false;
     private BukkitTask saveTask;
-    private boolean useSql = true; // Default to TRUE for this refactor
 
     public static class BlockChangeRecord {
         public String world;
@@ -54,7 +46,6 @@ public class BuildModeManager {
 
     public BuildModeManager(JxshMisc plugin) {
         this.plugin = plugin;
-        this.gson = new Gson();
 
         loadDatabase();
 
@@ -86,7 +77,7 @@ public class BuildModeManager {
         return adminModePlayers.contains(uuid);
     }
 
-    public void setBuildMode(Player player, boolean enabled) {
+    public void setBuildModeEnabled(Player player, boolean enabled) {
         if (enabled) {
             buildModePlayers.add(player.getUniqueId());
             player.sendMessage(plugin.parseText(
@@ -109,13 +100,9 @@ public class BuildModeManager {
             player.sendMessage(plugin.parseText(
                     plugin.getConfigManager().getMessages().getString("commands.adminbuild.disabled"), player));
         }
-        // Admin mode might not strictly need persistence if it's just a toggle, but we
-        // can save it if needed.
-        // For now, only BuildMode persistence was explicitly requested/implied for
-        // session restore.
     }
 
-    public void recordChange(Player player, Block block) {
+    public void recordChange(Player player, Block block, BlockData dataToRecord) {
         if (!isBuildModeEnabled(player.getUniqueId()))
             return;
 
@@ -124,10 +111,18 @@ public class BuildModeManager {
 
         List<BlockChangeRecord> changes = playerChanges.get(uuid);
         synchronized (changes) {
-            changes.add(new BlockChangeRecord(block.getLocation(), block.getBlockData()));
+            changes.add(new BlockChangeRecord(block.getLocation(), dataToRecord));
         }
         trackedLocations.put(serializeLocation(block.getLocation()), uuid);
         dirty = true;
+    }
+
+    public boolean isTrackedBlock(Block block) {
+        return trackedLocations.containsKey(serializeLocation(block.getLocation()));
+    }
+
+    public void removeTrackedBlock(Block block) {
+        trackedLocations.remove(serializeLocation(block.getLocation()));
     }
 
     public int getChangeCount(UUID uuid) {
@@ -135,60 +130,50 @@ public class BuildModeManager {
         return list == null ? 0 : list.size();
     }
 
-    public void resetPlayer(Player player) {
+    public int resetPlayer(Player player) {
         UUID uuid = player.getUniqueId();
         List<BlockChangeRecord> changes = playerChanges.remove(uuid);
 
         if (changes != null && !changes.isEmpty()) {
+            int count = changes.size();
             // Undo changes logic
-            // For strict SQL refactor, we might want to handle this cautiously.
-            // But if we are just restoring methods, let's keep it simple.
-            // We can use WorldEdit or manual rollback.
+            plugin.getLogger().info("[BuildMode] Restoring " + count + " blocks for " + player.getName());
 
-            // Simple manual rollback for now as requested by user logic previously.
-            // Actually, the user wants "Structural Alignment" so I should try to use
-            // WorldEdit if possible or just Bukkit API.
-            // Previous code used WorldEdit EditSession if I recall correctly from imports.
-
-            try (EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(player.getWorld()))) {
-                for (BlockChangeRecord record : changes) {
-                    // Reverse order? Usually undo is reverse.
-                    // But this is just "reset all", so order might not matter if none overlap.
-                    // If they overlap, we want partial order.
-                }
-                // Actually, let's just use Bukkit for simplicity unless WE is required.
-                logger("Restoring " + changes.size() + " blocks for " + player.getName());
-
-                Collections.reverse(changes); // Undo last first
-                for (BlockChangeRecord record : changes) {
-                    World w = Bukkit.getWorld(record.world);
-                    if (w != null) {
-                        Block b = w.getBlockAt(record.x, record.y, record.z);
+            // Reverse order to undo correctly
+            Collections.reverse(changes);
+            for (BlockChangeRecord record : changes) {
+                World w = Bukkit.getWorld(record.world);
+                if (w != null) {
+                    Block b = w.getBlockAt(record.x, record.y, record.z);
+                    try {
                         b.setBlockData(Bukkit.createBlockData(record.previousBlockData));
-                        trackedLocations.remove(serializeLocation(b.getLocation()));
+                    } catch (Exception e) {
+                        // Ignore invalid data
                     }
+                    trackedLocations.remove(serializeLocation(b.getLocation()));
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+            buildModePlayers.remove(uuid);
+            executeExternalResetCommands(player);
+            dirty = true;
+            return count;
         }
 
         buildModePlayers.remove(uuid);
         executeExternalResetCommands(player);
         dirty = true;
+        return 0;
     }
 
-    public void resetAll() {
+    public int resetAll() {
+        int total = 0;
         for (UUID uuid : new HashSet<>(playerChanges.keySet())) {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                resetPlayer(p);
-            } else {
-                // Offline reset?
-                // We can't easily set blocks for offline players without loading chunks.
-                // Skip for now.
+                total += resetPlayer(p);
             }
         }
+        return total;
     }
 
     private synchronized void saveDatabase() {
@@ -202,7 +187,6 @@ public class BuildModeManager {
         try (java.sql.Connection conn = plugin.getDatabaseManager().getConnection()) {
             conn.setAutoCommit(false);
 
-            // We use different queries for H2 vs MariaDB for UPSERT
             String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2").toUpperCase();
             boolean isMaria = type.equals("MARIADB");
 
@@ -273,9 +257,5 @@ public class BuildModeManager {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void logger(String msg) {
-        plugin.getLogger().info("[BuildMode] " + msg);
     }
 }
