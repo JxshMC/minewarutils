@@ -282,63 +282,64 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     }
 
     private void registerCommands() {
-        commandManager.registerCommand("minewarutils", new MinewarUtilsCommand(this), "minewarutils");
+        // Register Executors (Internal Key -> Executor)
+        commandManager.addExecutor("minewarutils", new MinewarUtilsCommand(this));
 
-        commandManager.registerCommand("top", new TopCommand(this), "top");
-        commandManager.registerCommand("bottom", new BottomCommand(this), "bottom");
-        commandManager.registerCommand("heal", new HealCommand(this), "heal");
-        commandManager.registerCommand("eat", new EatCommand(this), "eat");
-        commandManager.registerCommand("fly", new FlyCommand(this), "fly");
-        commandManager.registerCommand("flyspeed", new FlySpeedCommand(this), "flyspeed");
+        commandManager.addExecutor("top", new TopCommand(this));
+        commandManager.addExecutor("bottom", new BottomCommand(this));
+        commandManager.addExecutor("heal", new HealCommand(this));
+        commandManager.addExecutor("eat", new EatCommand(this));
+        commandManager.addExecutor("fly", new FlyCommand(this));
+        commandManager.addExecutor("flyspeed", new FlySpeedCommand(this));
 
-        commandManager.registerCommand("gamemode", new GamemodeCommand(this, "gamemode", null), "gamemode");
-        commandManager.registerCommand("gmc", new GamemodeCommand(this, "gmc", org.bukkit.GameMode.CREATIVE), "gmc");
-        commandManager.registerCommand("gms", new GamemodeCommand(this, "gms", org.bukkit.GameMode.SURVIVAL), "gms");
-        commandManager.registerCommand("gma", new GamemodeCommand(this, "gma", org.bukkit.GameMode.ADVENTURE), "gma");
-        commandManager.registerCommand("gmsp", new GamemodeCommand(this, "gmsp", org.bukkit.GameMode.SPECTATOR),
-                "gmsp");
+        commandManager.addExecutor("gamemode", new GamemodeCommand(this, "gamemode", null));
+        commandManager.addExecutor("gmc", new GamemodeCommand(this, "gmc", org.bukkit.GameMode.CREATIVE));
+        commandManager.addExecutor("gms", new GamemodeCommand(this, "gms", org.bukkit.GameMode.SURVIVAL));
+        commandManager.addExecutor("gma", new GamemodeCommand(this, "gma", org.bukkit.GameMode.ADVENTURE));
+        commandManager.addExecutor("gmsp", new GamemodeCommand(this, "gmsp", org.bukkit.GameMode.SPECTATOR));
 
-        commandManager.registerCommand("inventorysee", new InventorySeeCommand(this), "inventorysee");
-        commandManager.registerCommand("clearinventory", new ClearInventoryCommand(this), "clearinventory");
-        commandManager.registerCommand("give", new GiveCommand(this), "give");
-        commandManager.registerCommand("head", new HeadCommand(this), "head");
+        commandManager.addExecutor("inventorysee", new InventorySeeCommand(this));
+        commandManager.addExecutor("clearinventory", new ClearInventoryCommand(this));
+        commandManager.addExecutor("give", new GiveCommand(this));
+        commandManager.addExecutor("head", new HeadCommand(this));
 
-        commandManager.registerCommand("setspawn", new SetSpawnCommand(this, spawnManager), "setspawn");
-        commandManager.registerCommand("spawn", new SpawnCommand(this, spawnManager), "spawn");
+        commandManager.addExecutor("setspawn", new SetSpawnCommand(this, spawnManager));
+        commandManager.addExecutor("spawn", new SpawnCommand(this, spawnManager));
 
-        commandManager.registerCommand("mutechat", new MuteChatCommand(this), "mutechat");
-        commandManager.registerCommand("slowchat", new SlowChatCommand(this), "slowchat");
-        commandManager.registerCommand("clearchat", new ClearChatCommand(this), "clearchat");
-        commandManager.registerCommand("mentiontoggle", new MentionToggleCommand(this), "mentiontoggle");
+        commandManager.addExecutor("mutechat", new MuteChatCommand(this));
+        commandManager.addExecutor("slowchat", new SlowChatCommand(this));
+        commandManager.addExecutor("clearchat", new ClearChatCommand(this));
+        commandManager.addExecutor("mentiontoggle", new MentionToggleCommand(this));
 
-        commandManager.registerCommand("buildmode", new com.jxsh.misc.commands.BuildModeCommand(this, buildModeManager),
-                "buildmode");
-        commandManager.registerCommand("bmadmin",
-                new com.jxsh.misc.commands.BuildModeAdminCommand(this, buildModeManager), "bmadmin");
-        commandManager.registerCommand("bmreset",
-                new com.jxsh.misc.commands.BuildModeResetCommand(this, buildModeManager), "bmreset");
+        commandManager.addExecutor("buildmode", new com.jxsh.misc.commands.BuildModeCommand(this, buildModeManager));
+        commandManager.addExecutor("bmadmin", new com.jxsh.misc.commands.BuildModeAdminCommand(this, buildModeManager));
+        commandManager.addExecutor("bmreset", new com.jxsh.misc.commands.BuildModeResetCommand(this, buildModeManager));
 
-        commandManager.registerCommand("poopgun", new PoopGunCommand(this), "poopgun");
-        commandManager.registerCommand("devarmour", new DevArmorCommand(this, devManager), "devarmour");
+        commandManager.addExecutor("poopgun", new PoopGunCommand(this));
+        commandManager.addExecutor("devarmour", new DevArmorCommand(this, devManager));
 
-        commandManager.registerCommand("setwarp", new SetWarpCommand(this, warpManager), "setwarp");
-        commandManager.registerCommand("warp", new WarpCommand(this, warpManager), "warp");
-        commandManager.registerCommand("warps", new WarpsCommand(this, warpManager), "warps");
-        commandManager.registerCommand("deletewarp", new DeleteWarpCommand(this, warpManager), "deletewarp");
-        commandManager.registerCommand("editwarp", new EditWarpCommand(this, warpManager), "editwarp");
-        commandManager.registerCommand("itemname", new ItemNameCommand(this), "itemname");
-        commandManager.registerCommand("lore", new LoreCommand(this), "lore");
-        commandManager.registerCommand("forcefield", new ForcefieldCommand(this, forcefieldManager), "forcefield");
+        commandManager.addExecutor("setwarp", new SetWarpCommand(this, warpManager));
+        commandManager.addExecutor("warp", new WarpCommand(this, warpManager));
+        commandManager.addExecutor("warps", new WarpsCommand(this, warpManager));
+        commandManager.addExecutor("deletewarp", new DeleteWarpCommand(this, warpManager));
+        commandManager.addExecutor("editwarp", new EditWarpCommand(this, warpManager));
+        commandManager.addExecutor("itemname", new ItemNameCommand(this));
+        commandManager.addExecutor("lore", new LoreCommand(this));
+        commandManager.addExecutor("forcefield", new ForcefieldCommand(this, forcefieldManager));
 
-        commandManager.registerCommand("createkit", new CreateKitCommand(this, kitManager), "createkit");
-        commandManager.registerCommand("kit", new KitCommand(this, kitManager), "kit");
-        commandManager.registerCommand("deletekit", new DeleteKitCommand(this, kitManager), "deletekit");
-        commandManager.registerCommand("editkit", new EditKitCommand(this, kitManager), "editkit");
-        commandManager.registerCommand("kits", new KitsCommand(this), "kits");
+        commandManager.addExecutor("createkit", new CreateKitCommand(this, kitManager));
+        commandManager.addExecutor("kit", new KitCommand(this, kitManager));
+        commandManager.addExecutor("deletekit", new DeleteKitCommand(this, kitManager));
+        commandManager.addExecutor("editkit", new EditKitCommand(this, kitManager));
+        commandManager.addExecutor("kits", new KitsCommand(this));
 
-        commandManager.registerCommand("tempop", new TempOpCommand(this, tempOpManager), "tempop");
-        commandManager.registerCommand("deop", new DeopCommand(this, tempOpManager), "tempop-remove");
-        commandManager.registerCommand("ops", new OpsCommand(this, tempOpManager), "ops");
+        commandManager.addExecutor("tempop", new TempOpCommand(this, tempOpManager));
+        commandManager.addExecutor("tempop-remove", new DeopCommand(this, tempOpManager));
+        commandManager.addExecutor("deop", new DeopCommand(this, tempOpManager));
+        commandManager.addExecutor("ops", new OpsCommand(this, tempOpManager));
+
+        // NOW register them based on config
+        commandManager.registerAllConfiguredCommands();
     }
 
     // Getters

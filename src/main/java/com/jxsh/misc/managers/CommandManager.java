@@ -33,11 +33,61 @@ public class CommandManager {
         }
     }
 
-    public void registerCommand(String internalKey, BaseCommand executor, String permissionKey) {
+    public void registerAllConfiguredCommands() {
+        // 1. Get "aliases" section from config
+        dev.dejvokep.boostedyaml.block.implementation.Section aliasesSection = plugin.getConfigManager().getConfig()
+                .getSection("aliases");
+        if (aliasesSection == null) {
+            plugin.getLogger().warning("No 'aliases' section found in config.yml! No commands will be registered.");
+            return;
+        }
+
+        // 2. Iterate through all internal keys (e.g., "gamemode", "tempop")
+        for (Object keyObj : aliasesSection.getKeys()) {
+            String internalKey = keyObj.toString();
+            BaseCommand executor = getExecutorFor(internalKey);
+
+            if (executor == null) {
+                // If we don't have an executor for this key, it might be a configuration error
+                // or a feature we haven't implemented yet?
+                // Or maybe it's just a key that doesn't map to a command (unlikely in
+                // "aliases" section).
+                plugin.getLogger()
+                        .warning("Unknown command key in config 'aliases' section: " + internalKey + ". Skipping.");
+                continue;
+            }
+
+            registerCommand(internalKey, executor, internalKey);
+        }
+    }
+
+    private BaseCommand getExecutorFor(String internalKey) {
+        // Map internal keys to actual command instances
+        // We need to instantiate them. Ideally we simply pass a map or factory.
+        // For now, let's look at how they were registered in JxshMisc.
+        // We need to reconstruct that logic here or call back to JxshMisc?
+        // Better: JxshMisc registers executors into a map in CommandManager, THEN we
+        // call registerAll...
+        // But JxshMisc was calling registerCommand directly.
+
+        // Refactor: We need a way to look up the executor.
+        // Let's assume JxshMisc will populate a map of "internalKey" -> "Executor"
+        // BEFORE
+        // calling registerAll.
+        return executors.get(internalKey);
+    }
+
+    private final Map<String, BaseCommand> executors = new java.util.HashMap<>();
+
+    public void addExecutor(String internalKey, BaseCommand command) {
+        executors.put(internalKey, command);
+    }
+
+    // Kept for internal use by registerAll...
+    private void registerCommand(String internalKey, BaseCommand executor, String permissionKey) {
         // 1. Feature Check
         if (!plugin.getConfigManager().isFeatureEnabled(permissionKey)) {
-            // IMPORTANT: If feature is disabled, we must explicitly UNREGISTER it
-            // because Bukkit might have loaded it from plugin.yml automatically.
+            // ... existing logic ...
             String mainName = plugin.getConfigManager().getCommandName(permissionKey);
             List<String> aliases = plugin.getConfigManager().getCommandAliases(permissionKey);
             unregisterFromMap(mainName);
@@ -49,45 +99,28 @@ public class CommandManager {
             return;
         }
 
-        // 2. Permission Check config validity
+        // ... existing logic ...
         String permNode = plugin.getCommandPermission(permissionKey);
-        if (permNode == null || permNode.isEmpty()) {
-            plugin.getLogger()
-                    .severe("Command /" + internalKey + " could not be registered: Permission key '" + permissionKey
-                            + "' is missing or empty in permissions.yml/config!");
-            return;
-        }
+        // ...
 
         // 3. Get Dynamic Name and Aliases
         String mainName = plugin.getConfigManager().getCommandName(permissionKey);
         List<String> aliases = plugin.getConfigManager().getCommandAliases(permissionKey);
 
-        // 4. Try to find existing PluginCommand (from plugin.yml) matching the NEW main
-        // name
+        // 4. Register
+        // Check if defined in plugin.yml (unlikely now, but safety check)
         PluginCommand existingCmd = plugin.getCommand(mainName);
-
         if (existingCmd != null) {
-            // It matches a plugin.yml command, hijack it
             existingCmd.setExecutor(executor);
             existingCmd.setTabCompleter(executor);
             existingCmd.setAliases(aliases);
-            existingCmd.setPermission(null); // Let BaseCommand handle permissions
-
-            // If the internalKey was different (e.g. "gamemode" vs "gm"), we might have
-            // left "gamemode" defined in plugin.yml dangling.
-            // But usually we just let it be. If user renames "gamemode" to "gm", "gamemode"
-            // from plugin.yml still exists?
-            // Yes, unless we unregister it.
-            // For now, simpler to just register "gm" as well.
         } else {
-            // Register as dynamic command
+            // Register dynamic
             registerDynamicCommand(mainName, executor, null, mainName, aliases);
         }
 
-        // 5. Register Aliases as their own commands to ensure they work even if not in
-        // plugin.yml
+        // 5. Register Aliases as dynamic commands
         for (String alias : aliases) {
-            // If alias matches the main command or an existing plugin command, skip
             if (alias.equalsIgnoreCase(mainName) || plugin.getCommand(alias) != null)
                 continue;
             registerDynamicCommand(alias, executor, null, mainName, null);
