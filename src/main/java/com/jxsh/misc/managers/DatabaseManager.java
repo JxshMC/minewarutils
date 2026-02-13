@@ -18,76 +18,79 @@ public class DatabaseManager {
         connect();
     }
 
+    private boolean isConnected = false;
+
+    public boolean isConnected() {
+        return isConnected && dataSource != null && !dataSource.isClosed();
+    }
+
     private void connect() {
-        String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2").toUpperCase();
+        // 1. Path Safety (Sync)
+        new java.io.File(plugin.getDataFolder(), "Database").mkdirs();
 
-        HikariConfig config = new HikariConfig();
+        // 2. Async Initialization
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2").toUpperCase();
+            HikariConfig config = new HikariConfig();
 
-        if (type.equals("MARIADB")) {
-            String host = plugin.getConfigManager().getConfig().getString("storage.host");
-            String port = plugin.getConfigManager().getConfig().getString("storage.port");
-            String database = plugin.getConfigManager().getConfig().getString("storage.database");
-            String username = plugin.getConfigManager().getConfig().getString("storage.username");
-            String password = plugin.getConfigManager().getConfig().getString("storage.password");
+            // 1. Storage Type Detection & Specific URL
+            if (type.equals("MARIADB")) {
+                String host = plugin.getConfigManager().getConfig().getString("storage.host");
+                String port = plugin.getConfigManager().getConfig().getString("storage.port");
+                String database = plugin.getConfigManager().getConfig().getString("storage.database");
+                String username = plugin.getConfigManager().getConfig().getString("storage.username");
+                String password = plugin.getConfigManager().getConfig().getString("storage.password");
 
-            config.setJdbcUrl("jdbc:mariadb://" + host + ":" + port + "/" + database);
-            config.setUsername(username);
-            config.setPassword(password);
-        } else {
-            // Default H2
-            // Use AUTO_SERVER=TRUE to allow mixed mode & MODE=MySQL for compatibility
-            config.setJdbcUrl(
-                    "jdbc:h2:plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE");
-            config.setDriverClassName("org.h2.Driver");
-        }
+                config.setJdbcUrl("jdbc:mariadb://" + host + ":" + port + "/" + database);
+                config.setUsername(username);
+                config.setPassword(password);
+            } else {
+                // IF H2: relative path with ./ mandatory
+                config.setJdbcUrl(
+                        "jdbc:h2:file:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE");
+                config.setDriverClassName("org.h2.Driver");
+                // 4. Hikari Tuning for H2
+                config.setConnectionTimeout(5000);
+            }
 
-        config.setMaximumPoolSize(
-                plugin.getConfigManager().getConfig().getInt("storage.pool-settings.maximum-pool-size", 10));
-        config.setMinimumIdle(plugin.getConfigManager().getConfig().getInt("storage.pool-settings.minimum-idle", 10));
-        config.setMaxLifetime(
-                plugin.getConfigManager().getConfig().getInt("storage.pool-settings.max-lifetime", 1800000));
-        config.setConnectionTimeout(
-                plugin.getConfigManager().getConfig().getInt("storage.pool-settings.connection-timeout", 5000));
+            config.setMaximumPoolSize(
+                    plugin.getConfigManager().getConfig().getInt("storage.pool-settings.maximum-pool-size", 10));
+            config.setMinimumIdle(
+                    plugin.getConfigManager().getConfig().getInt("storage.pool-settings.minimum-idle", 10));
+            config.setMaxLifetime(
+                    plugin.getConfigManager().getConfig().getInt("storage.pool-settings.max-lifetime", 1800000));
+            if (!type.equals("H2")) {
+                // Apply timeout for MariaDB too if not set? Config has default
+                config.setConnectionTimeout(
+                        plugin.getConfigManager().getConfig().getInt("storage.pool-settings.connection-timeout", 5000));
+            }
 
-        // Retry logic for H2 file locks during reloads
-        int attempts = 6; // Increased to 6 with faster intervals
-        for (int i = 0; i < attempts; i++) {
             try {
                 dataSource = new HikariDataSource(config);
                 // Test connection
                 try (Connection conn = dataSource.getConnection()) {
                     if (conn.isValid(1)) {
-                        plugin.getLogger().info("Database connected successfully!");
-                        break; // Connection successful
+                        plugin.getLogger().info("Database connected successfully! (" + type + ")");
+                        isConnected = true;
+                        initTables();
                     }
                 }
             } catch (Exception e) {
-                if (i == attempts - 1) {
-                    plugin.getLogger().severe("Failed to connect to database after " + attempts + " attempts!");
-                    plugin.getLogger().severe("Falling back to local storage (YAML/JSON) for data persistence.");
-                    e.printStackTrace();
-                    return;
-                } else {
-                    plugin.getLogger().warning("Database lock detected, retrying in 500ms... (Attempt " + (i + 1)
-                            + "/" + attempts + ")");
-                    if (dataSource != null && !dataSource.isClosed()) {
-                        dataSource.close();
-                    }
-                    try {
-                        Thread.sleep(500); // reduced to 500ms
-                    } catch (InterruptedException ignored) {
-                    }
+                plugin.getLogger().severe("Failed to connect to " + type + " database!");
+                plugin.getLogger().severe("Falling back to local storage (YAML/JSON) for data persistence.");
+                // Ensure dataSource is nullified if it was partially created (though Hikari
+                // usually checks config first)
+                if (dataSource != null) {
+                    dataSource.close();
+                    dataSource = null;
                 }
+                e.printStackTrace();
             }
-        }
-
-        if (dataSource != null && !dataSource.isClosed()) {
-            initTables();
-        }
+        });
     }
 
     private void initTables() {
-        if (dataSource == null || dataSource.isClosed())
+        if (!isConnected())
             return;
 
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
@@ -128,6 +131,7 @@ public class DatabaseManager {
                 plugin.getLogger().warning("Error closing DataSource: " + e.getMessage());
             } finally {
                 dataSource = null;
+                isConnected = false;
             }
         }
     }

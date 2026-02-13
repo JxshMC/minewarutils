@@ -191,6 +191,16 @@ public class ScoreboardManager implements Listener {
         if (objective == null)
             return;
 
+        // Ensure database is ready if we rely on it (prevent async fetch issues)
+        if (!plugin.getDatabaseManager().isConnected()) {
+            // Optional: Show "Loading..." or just return?
+            // Returning keeps old scoreboard or empty one.
+            // Requirement: "only updates placeholders once the DatabaseManager confirms
+            // isConnected"
+            // We'll return to prevent PAPI from hitting unready managers.
+            return;
+        }
+
         // Update Title
         String parsedTitle = processTitle(title, player);
         objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));

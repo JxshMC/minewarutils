@@ -518,6 +518,18 @@ public class ConfigManager {
                 return "mentions";
             case "forcefield":
                 return "cosmetics";
+            // Feature Flags (Non-Command)
+            case "MOTD":
+            case "motd":
+                return "MOTD";
+            case "join-messages":
+                return "join-messages";
+            case "custom-join-messages":
+                return "custom-join-messages";
+            case "join-commands":
+                return "join-commands";
+            case "world-flags":
+                return "world-flags";
             default:
                 return null;
         }
