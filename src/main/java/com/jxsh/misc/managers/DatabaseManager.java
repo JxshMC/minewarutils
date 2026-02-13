@@ -35,8 +35,9 @@ public class DatabaseManager {
             config.setPassword(password);
         } else {
             // Default H2
+            // Use AUTO_SERVER=TRUE to allow mixed mode & MODE=MySQL for compatibility
             config.setJdbcUrl(
-                    "jdbc:h2:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=0");
+                    "jdbc:h2:plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE");
             config.setDriverClassName("org.h2.Driver");
         }
 
@@ -57,12 +58,13 @@ public class DatabaseManager {
                 try (Connection conn = dataSource.getConnection()) {
                     if (conn.isValid(1)) {
                         plugin.getLogger().info("Database connected successfully!");
-                        break;
+                        break; // Connection successful
                     }
                 }
             } catch (Exception e) {
                 if (i == attempts - 1) {
                     plugin.getLogger().severe("Failed to connect to database after " + attempts + " attempts!");
+                    plugin.getLogger().severe("Falling back to local storage (YAML/JSON) for data persistence.");
                     e.printStackTrace();
                     return;
                 } else {
