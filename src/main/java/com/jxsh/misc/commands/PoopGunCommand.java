@@ -74,7 +74,7 @@ public class PoopGunCommand extends BaseCommand {
     }
 
     private void giveGun(Player player) {
-        String matName = plugin.getConfigManager().getConfig().getString("utility.poopgun.item.material",
+        String matName = plugin.getConfigManager().getConfig().getString("fun.poop-gun.item.material",
                 "DIAMOND_HOE");
         Material material = Material.matchMaterial(matName);
         if (material == null)
@@ -83,12 +83,12 @@ public class PoopGunCommand extends BaseCommand {
         ItemStack gun = new ItemStack(material);
         ItemMeta meta = gun.getItemMeta();
         if (meta != null) {
-            String displayName = plugin.getConfigManager().getConfig().getString("utility.poopgun.item.name",
+            String displayName = plugin.getConfigManager().getConfig().getString("fun.poop-gun.item.name",
                     "&6&lPoop Gun");
             meta.displayName(plugin.parseText(displayName, player));
 
             List<net.kyori.adventure.text.Component> lore = new ArrayList<>();
-            for (String line : plugin.getConfigManager().getConfig().getStringList("utility.poopgun.item.lore")) {
+            for (String line : plugin.getConfigManager().getConfig().getStringList("fun.poop-gun.item.lore")) {
                 lore.add(plugin.parseText(line, player));
             }
             meta.lore(lore);

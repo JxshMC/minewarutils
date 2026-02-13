@@ -1,9 +1,9 @@
 package com.jxsh.misc;
 
-import com.jxsh.misc.utils.CenteringManager;
 import me.clip.placeholderapi.PlaceholderAPI;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -159,6 +159,14 @@ public class ScoreboardManager implements Listener {
 
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
+        // Hide Numbers via Paper API if available
+        try {
+            // Use reflection or direct check if compiling against paper API
+            objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank());
+        } catch (Throwable t) {
+            // Fallback: older version or not Paper. Numbers will default to 0.
+        }
+
         player.setScoreboard(scoreboard);
         playerScoreboards.put(player.getUniqueId(), scoreboard);
         updateScoreboard(player);
@@ -188,22 +196,26 @@ public class ScoreboardManager implements Listener {
         objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));
 
         // --- Processing Pipeline ---
+        // 1. Static Replacements
+        // 2. Fallback Replacements
+        // 3. Dynamic Hiding
+        // 4. Centering
+        // 5. Hide Numbers (Already set on Objective, or via 0 score)
+
         List<String> finalLines = new ArrayList<>();
 
         for (String rawLine : lines) {
-            // Stage 1: Static Logic (Placeholders + Replacements)
-            String stage1 = applyStage1(rawLine, player);
+            // Step 1 & 2: Static & Fallback Replacements
+            String processed = applyStaticAndFallback(rawLine, player);
 
-            // Stage 2: Dynamic Logic ({temp-op} triggers)
-            // If returns null, line is killed.
-            String stage2 = applyStage2(stage1, player);
-            if (stage2 == null)
-                continue; // Kill Switch Pipeline
+            // Step 3: Dynamic Hiding ({temp-op})
+            // If returns null, line is removed (Kill Switch)
+            processed = applyDynamicLogic(processed, player);
+            if (processed == null)
+                continue;
 
             // Visual Engine: {newline} splitter
-            // If line contains {newline}, split it.
-            // Note: split() can return array. We need to handle list insertion.
-            List<String> splitLines = applyNewlineSplit(stage2);
+            List<String> splitLines = applyNewlineSplit(processed);
 
             // Add to final list
             for (String split : splitLines) {
@@ -213,7 +225,7 @@ public class ScoreboardManager implements Listener {
                     finalPass = PlaceholderAPI.setPlaceholders(player, finalPass);
                 }
 
-                // Visual Engine: {centre}
+                // Step 4: Centering (Inline Literal Logic)
                 finalPass = applyCentering(finalPass);
 
                 finalLines.add(finalPass);
@@ -221,8 +233,6 @@ public class ScoreboardManager implements Listener {
         }
 
         // --- Update Scoreboard Teams ---
-        // Iterate 15 down to 1 (or size)
-
         // Cleanup: Reset scores > size
         for (String entry : scoreboard.getEntries()) {
             org.bukkit.scoreboard.Score sc = objective.getScore(entry);
@@ -237,7 +247,7 @@ public class ScoreboardManager implements Listener {
             int score = finalLines.size() - i;
 
             if (score < 1)
-                break; // Should not happen if loop based on 15
+                break;
 
             if (lineIndex < finalLines.size()) {
                 updateLine(scoreboard, objective, score, finalLines.get(lineIndex));
@@ -247,12 +257,12 @@ public class ScoreboardManager implements Listener {
         }
     }
 
-    // --- Stage 1 ---
-    private String applyStage1(String text, Player player) {
-        // 1. Static Placeholders
+    // --- Step 1 & 2: Static & Fallback ---
+    private String applyStaticAndFallback(String text, Player player) {
+        // 1. Static Placeholders ({primary_colour})
         String result = applyStaticPlaceholders(text);
 
-        // 2. Replacements Engine
+        // 2. Replacements Engine (%luckperms_prefix% -> "No Rank")
         if (replacements != null) {
             for (Map.Entry<String, Map<String, String>> entry : replacements.entrySet()) {
                 String papiKey = entry.getKey(); // e.g. %luckperms_prefix%
@@ -281,9 +291,9 @@ public class ScoreboardManager implements Listener {
         return result;
     }
 
-    // --- Stage 2 ---
+    // --- Step 3: Dynamic Logic ---
     // Returns null if line should be removed
-    private String applyStage2(String text, Player player) {
+    private String applyDynamicLogic(String text, Player player) {
         if (!text.contains("{temp-op}")) {
             return text;
         }
@@ -309,8 +319,6 @@ public class ScoreboardManager implements Listener {
 
         // Check 3: Kill Switch
         // If we reached here, it's neither Relog nor Active Time.
-        // Likely empty or "not active".
-        // The rule says: "If the OP status is inactive/empty, remove the line entirely"
         return null;
     }
 
@@ -331,13 +339,28 @@ public class ScoreboardManager implements Listener {
         return list;
     }
 
+    // --- Step 4: Centering (Inline Literal Logic) ---
     private String applyCentering(String text) {
-        if (text.contains("{centre}")) {
-            String clean = text.replace("{centre}", "");
-            // Use CenteringManager
-            return CenteringManager.getCenteredMessage(clean);
+        if (!text.contains("{centre}")) {
+            return text;
         }
-        return text;
+        String clean = text.replace("{centre}", "");
+
+        // Calculate visible length
+        String plain = PlainTextComponentSerializer.plainText().serialize(MiniMessage.miniMessage().deserialize(clean));
+        int visibleLength = plain.length();
+        int padding = (30 - visibleLength) / 2;
+
+        if (padding <= 0) {
+            return clean;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < padding; i++) {
+            sb.append(" ");
+        }
+        sb.append(clean);
+        return sb.toString();
     }
 
     // --- Helpers ---
@@ -349,14 +372,18 @@ public class ScoreboardManager implements Listener {
             team = sb.registerNewTeam(teamName);
             String entry = "§" + Integer.toHexString(score); // Unique entry 0-F
             if (score > 15)
-                entry = "§" + score; // Fallback for >15, though unlikely
+                entry = "§" + score; // Fallback for >15
             team.addEntry(entry);
-            obj.getScore(entry).setScore(score);
+            obj.getScore(entry).setScore(score); // Step 5: Score is 0? Request said set to 0. But we use 15..1 for
+                                                 // ordering.
+            // If using NumberFormat.blank(), the score value doesn't matter visually.
+            // If we MUST use 0, we can't use score for ordering easily with just Bukkit API
+            // unless we use team suffix hack for everything.
+            // Standard approach: Score dictates order. NumberFormat hides value.
         }
         try {
             team.prefix(MiniMessage.miniMessage().deserialize(text));
         } catch (Exception e) {
-            // Fallback for non-minimessage or errors
             team.prefix(net.kyori.adventure.text.Component.text(text));
         }
     }

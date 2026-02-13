@@ -53,7 +53,7 @@ public class PoopGunListener implements Listener {
 
         // 2. Fallback to Display Name (for older items)
         if (!isPoopGun && meta.hasDisplayName()) {
-            String configNameRaw = plugin.getConfigManager().getConfig().getString("utility.poopgun.item.name",
+            String configNameRaw = plugin.getConfigManager().getConfig().getString("fun.poop-gun.item.name",
                     "&6&lPoop Gun");
 
             // Convert both to plain text for comparison
@@ -84,11 +84,16 @@ public class PoopGunListener implements Listener {
             }
         }
 
-        int cooldownSeconds = plugin.getConfigManager().getConfig().getInt("utility.poopgun.shoot-cooldown", 5);
+        int cooldownSeconds = plugin.getConfigManager().getConfig().getInt("fun.poop-gun.shoot-cooldown", 5);
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownSeconds * 1000L));
 
         // Fire snowball
         Snowball snowball = player.launchProjectile(Snowball.class);
+
+        // Velocity logic
+        double velocity = plugin.getConfigManager().getConfig().getDouble("fun.poop-gun.velocity", 1.5);
+        snowball.setVelocity(player.getLocation().getDirection().multiply(velocity));
+
         snowball.setMetadata("poopgun_projectile", new FixedMetadataValue(plugin, true));
     }
 
@@ -134,7 +139,7 @@ public class PoopGunListener implements Listener {
         activePoopers.add(uuid);
 
         int duration = Integer
-                .parseInt(plugin.getConfigManager().getConfig().getString("utility.poopgun.item.poop-duration", "15"));
+                .parseInt(plugin.getConfigManager().getConfig().getString("fun.poop-gun.item.poop-duration", "15"));
         int interval = 3; // Hardcoded or config? Previous code had it. Let's keep 3s interval for
                           // 'pulse'.
         // Actually user said "poop-duration is 15".
@@ -143,11 +148,11 @@ public class PoopGunListener implements Listener {
         String poopNameTemplate = plugin.getConfigManager().getMessages().getString("poopgun.poop-name",
                 "&6%target%'s shit");
 
-        String soundName = plugin.getConfigManager().getConfig().getString("utility.poopgun.sound",
+        String soundName = plugin.getConfigManager().getConfig().getString("fun.poop-gun.sound",
                 "minecraft:entity.player.burp");
         float volume = Float
-                .parseFloat(plugin.getConfigManager().getConfig().getString("utility.poopgun.volume", "100"));
-        float pitch = Float.parseFloat(plugin.getConfigManager().getConfig().getString("utility.poopgun.pitch", "0.1"));
+                .parseFloat(plugin.getConfigManager().getConfig().getString("fun.poop-gun.volume", "100"));
+        float pitch = Float.parseFloat(plugin.getConfigManager().getConfig().getString("fun.poop-gun.pitch", "0.1"));
 
         new BukkitRunnable() {
             private int elapsed = 0;
