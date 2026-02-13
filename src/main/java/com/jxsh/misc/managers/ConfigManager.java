@@ -167,14 +167,15 @@ public class ConfigManager {
                     Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
                             "Resource /" + filename + " not found"),
                     GeneralSettings.builder().setUseDefaults(true).build(),
-                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    LoaderSettings.builder().setAutoUpdate(false).build(),
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(true)
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(false)
                             .build());
         }
 
         // 2. Strict Repair: Compare against resource default
-        validateAndRepair(doc, filename);
+        // validateAndRepair(doc, filename); // Removed as BoostedYAML handles it via
+        // settings
 
         // 3. Save if modified during repair options above (GeneralSettings might handle
         // defaults, but we want to be sure)
@@ -184,35 +185,6 @@ public class ConfigManager {
 
         plugin.getLogger().info(filename + " loaded successfully! (Version: " + doc.getInt("config-version", -1) + ")");
         return doc;
-    }
-
-    private void validateAndRepair(YamlDocument doc, String filename) {
-        boolean modified = false;
-
-        // Compare keys with defaults
-        // BoostedYAML already adds missing keys from default if setUseDefaults(true) is
-        // set.
-        // However, we want to ensure that if a key is missing in the FILE, it gets
-        // written
-        // back.
-        // The doc.save() call in loadDocument will write the in-memory state (which
-        // includes defaults) to disk.
-        // So strict repair is mostly handled by BoostedYAML.
-        // But the user asked for "Surgical Fixes: If a key is missing... re-insert...
-        // sorting..."
-
-        // We also want to validate specific values if needed, but for now relying on
-        // BoostedYAML's default merging is the robust way.
-        // We just need to force a save.
-
-        // Let's add specific logic for "re-insert correct key while preserving user's
-        // values"
-        // BoostedYAML UpdaterSettings with setKeepAll(true) preserves user keys.
-        // GeneralSettings setUseDefaults(true) merges defaults.
-
-        // User said: "Sorting: On save, the config must match the default internal
-        // layout exactly."
-        // We enabled START_BY_DEFAULTS sorting in UpdaterSettings.
     }
 
     public void reloadConfig() {

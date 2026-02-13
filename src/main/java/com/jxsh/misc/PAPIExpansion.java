@@ -150,9 +150,10 @@ public class PAPIExpansion extends PlaceholderExpansion {
             sb.append(hours).append("h ");
         if (minutes > 0)
             sb.append(minutes).append("m ");
-        if (seconds > 0 || sb.length() == 0)
+        if (seconds > 0)
             sb.append(seconds).append("s");
 
-        return sb.toString().trim();
+        // Trim and return
+        return sb.length() > 0 ? sb.toString().trim() : "0s";
     }
 }

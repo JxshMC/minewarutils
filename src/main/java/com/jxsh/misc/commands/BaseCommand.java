@@ -160,4 +160,29 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             }
         }
     }
+
+    /**
+     * Checks if the provided argument matches a sub-command's name or any of its
+     * aliases.
+     * 
+     * @param arg     The argument to check (e.g. args[0])
+     * @param mainKey The internal key of the main command (e.g. "warps")
+     * @param subKey  The internal key of the sub-command (e.g. "set")
+     * @return true if matches
+     */
+    protected boolean checkSubCommand(String arg, String mainKey, String subKey) {
+        // 1. Check strict name
+        String configName = plugin.getConfigManager().getSubCommandName(mainKey, subKey);
+        if (arg.equalsIgnoreCase(configName))
+            return true; // Matches configured name (e.g. "set")
+
+        // 2. Check aliases
+        List<String> aliases = plugin.getConfigManager().getSubCommandAliases(mainKey, subKey);
+        for (String alias : aliases) {
+            if (arg.equalsIgnoreCase(alias))
+                return true;
+        }
+
+        return false;
+    }
 }

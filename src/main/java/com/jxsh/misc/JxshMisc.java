@@ -127,6 +127,27 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         loadConfigValues();
 
+        // Register HelpCommand via CommandMap EARLY (Fixes NPE if accessed early?)
+        // User requested: "Move initialization to the top of onEnable"
+        // We place it right after Config load to be safe.
+        if (configManager.getConfig().getBoolean("help-system.enabled", true)) {
+            try {
+                java.lang.reflect.Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+                commandMapField.setAccessible(true);
+                org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap) commandMapField
+                        .get(Bukkit.getServer());
+
+                com.jxsh.misc.commands.HelpCommand helpCmd = new com.jxsh.misc.commands.HelpCommand(this);
+                commandMap.register("minewarutils", helpCmd); // Registers as /help (via plugin.yml or dynamic?)
+                // Wait, HelpCommand logic usually handles /help.
+                // Registering it with fallback "minewarutils" prefix is standard.
+                // The actual command name inside HelpCommand constructor might be "help".
+            } catch (Exception e) {
+                getLogger().severe("Failed to register HelpCommand to CommandMap!");
+                e.printStackTrace();
+            }
+        }
+
         // Initialize Scoreboard Manager
         scoreboardManager = new ScoreboardManager(this);
         getServer().getPluginManager().registerEvents(scoreboardManager, this);
@@ -220,21 +241,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         // Register Commands (ONLY if config loaded successfully)
         registerCommands();
 
-        // Register HelpCommand via CommandMap
-        if (configManager.getConfig().getBoolean("help-system.enabled", true)) {
-            try {
-                java.lang.reflect.Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-                commandMapField.setAccessible(true);
-                org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap) commandMapField
-                        .get(Bukkit.getServer());
-
-                com.jxsh.misc.commands.HelpCommand helpCmd = new com.jxsh.misc.commands.HelpCommand(this);
-                commandMap.register("minewarutils", helpCmd);
-            } catch (Exception e) {
-                getLogger().severe("Failed to register HelpCommand to CommandMap!");
-                e.printStackTrace();
-            }
-        }
     }
 
     private void unloadPluginSystem() {

@@ -19,10 +19,14 @@ Scoreboard:
   - "  <gradient:#ccffff:#0adef7><b>ᴍɪɴᴇᴡᴀʀ.ɴᴇᴛ"
 
 placeholders:
-  "{primary_colour}": "<#ccffff>" # Main colour for scoreboard text
-  "{secondary_colour}": "<#0adef7>" # Secondary for highlighted text or values.
-  "{lobby_name}": "ɴᴏᴛ ᴄᴏɴғɪɢᴜʀᴇᴅ" # Server name included in title.
+  # Main colour for scoreboard text
+  "{primary_colour}": "<#ccffff>"
+  # Secondary for highlighted text or values.
+  "{secondary_colour}": "<#0adef7>"
+  # Server name included in title.
+  "{lobby_name}": "ɴᴏᴛ ᴄᴏɴғɪɢᴜʀᴇᴅ"
 
 Replacements:
   "%luckperms_prefix%":
-    "": "No Rank" # Displays "No Rank" if the user is default rank.
+    # Displays "No Rank" if the user is default rank.
+    "": "No Rank"
