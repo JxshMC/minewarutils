@@ -110,8 +110,9 @@ commands:
     created: <#ccffff>Kit <#0adef7>%kit% <#ccffff>created
     created-usage: '<red>Usage: /createkit <name> [cooldown]'
     usage: '<red>Usage: /kit <name> [player]'
-    received: <#ccffff>You received kit <#0adef7>%kit%
+    received: "<green>You received kit <yellow>%kit%<green>."
     given: <#ccffff>Given kit <#0adef7>%kit% <#ccffff>to %suffix_other%%target%
+    given-to-other: "<green>You gave kit <yellow>%kit% <green>to <yellow>%player%<green>."
     not-found: <#ccffff>Kit <#0adef7>%kit% <#ccffff>not found
     exists: <red>Kit already exists
     deleted: <#ccffff>Kit <#0adef7>%kit% <#ccffff>deleted
@@ -165,7 +166,7 @@ commands:
     not-op: "<red>That player is not opped."
   
   error:
-    no-permission: <red>You do not have permission to use this command.
+    no-permission: "<red>You do not have permission to do this."
     others-no-permission: <red>You don't have permission to use this command on other players
     no-console: <red>Console must specify a player name.
     players-only: <red>This command can only be used by players.

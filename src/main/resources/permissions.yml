@@ -5,9 +5,19 @@ config-version: 3
 
 commands:
   # MinewarUtils Subcommands
-  minewarutils:
-    node: "minewar.admin.info"
-    default: true
+  minewar.admin:
+    description: "Administrator permission for all Minewar Utils features"
+    children:
+      minewar.op.others: true
+      minewar.deop.others: true
+      minewar.heal.others: true
+      minewar.eat.others: true
+      minewar.fly.others: true
+      minewar.gamemode.others: true
+      minewar.invsee.others: true
+      minewar.cooldown.bypass: true
+      minewar.tabcomplete.bypass: true
+      minewar.buildmode.admin: true
     op-bypass: true
   reload:
     node: "minewar.admin.reload"

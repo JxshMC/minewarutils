@@ -1,5 +1,5 @@
 #Jxsh-Core v1.0 made for minewar 
-config-version: 3 # DO NOT MODIFY
+config-version: 10 # DO NOT MODIFY
 
 features:
   help: true
@@ -265,19 +265,23 @@ world:
     0tick: true
   worlds: {}
 
-cosmetics:
-  poopgun:
+fun:
+  poop-gun:
     shoot-cooldown: 5 # Seconds
+    velocity: 1.5
     item:
       material: DIAMOND_HOE
       name: '&6&lPoop Gun'
-      poop-duration: '15' # Seconds
+      poop-duration: 15 # Seconds
       lore:
       - '&7Right-click to shoot!'
       - '&7Make them poop!'
     sound: minecraft:entity.player.burp
-    volume: '100'
-    pitch: '0.1'
+    volume: 1.0
+    pitch: 0.1
+  dev-armor:
+    shuffle-speed: 5 # Ticks
+    item-name: "&c&lDev Armor"
   forcefield: 
     range: 2
     sound: minecraft:entity.chicken.egg
