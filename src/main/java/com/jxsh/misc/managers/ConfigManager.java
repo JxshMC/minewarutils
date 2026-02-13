@@ -137,17 +137,41 @@ public class ConfigManager {
         File file = new File(plugin.getDataFolder(), filename);
 
         // 1. Create/Load the document
-        YamlDocument doc = YamlDocument.create(
-                file,
-                Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
-                        "Resource /" + filename + " not found"),
-                GeneralSettings.builder().setUseDefaults(true).build(),
-                LoaderSettings.builder().setAutoUpdate(true).build(),
-                DumperSettings.DEFAULT,
-                UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(true)
-                        .setOptionSorting(
-                                dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
-                        .build());
+        // 1. Create/Load the document
+        YamlDocument doc = null;
+        try {
+            doc = YamlDocument.create(
+                    file,
+                    Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
+                            "Resource /" + filename + " not found"),
+                    GeneralSettings.builder().setUseDefaults(true).build(),
+                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(true)
+                            .build());
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to load " + filename + ": " + e.getMessage());
+            plugin.getLogger().warning("Attempting to backup and reset " + filename + "...");
+
+            // Backup
+            File backup = new File(plugin.getDataFolder(), filename + ".broken." + System.currentTimeMillis());
+            if (file.renameTo(backup)) {
+                plugin.getLogger().info("Backup created: " + backup.getName());
+            } else {
+                plugin.getLogger().warning("Failed to create backup! Original file might be lost.");
+            }
+
+            // Try again (fresh)
+            doc = YamlDocument.create(
+                    new File(plugin.getDataFolder(), filename),
+                    Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
+                            "Resource /" + filename + " not found"),
+                    GeneralSettings.builder().setUseDefaults(true).build(),
+                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(true)
+                            .build());
+        }
 
         // 2. Strict Repair: Compare against resource default
         validateAndRepair(doc, filename);
