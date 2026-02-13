@@ -134,8 +134,8 @@ commands:
         sorting_placeholders:
         - '%role_weight%'
         - '%username_lower%'
-        perm-ops: '%suffix_other%%player%'
-        temp-ops: suffix_other%%player%
+        perm-ops: <white>%suffix_other%%player%
+        temp-ops: <reset>%suffix_other%%player% <#ccffff>[%tempop_time_left%]<gray>, 
       header:
       - <#0adef7>Currently opped users
       - ''
