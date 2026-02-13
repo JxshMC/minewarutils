@@ -43,3 +43,6 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.3")
+    implementation("com.h2database:h2:2.2.224")

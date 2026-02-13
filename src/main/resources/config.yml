@@ -280,7 +280,7 @@ fun:
     volume: 1.0
     pitch: 0.1
   dev-armor:
-    shuffle-speed: 5 # Ticks
+    shuffle-speed: 2 # Ticks
     item-name: "&c&lDev Armor"
   forcefield: 
     range: 2
@@ -298,3 +298,16 @@ fun:
   particle-type: HEART
   particle-count: 1
   particle-duration-seconds: 1
+
+storage:
+  type: H2 # Options: H2, MARIADB
+  host: localhost
+  port: 3306
+  database: minewarutils
+  username: root
+  password: password
+  pool-settings:
+    maximum-pool-size: 10
+    minimum-idle: 10
+    max-lifetime: 1800000
+    connection-timeout: 5000

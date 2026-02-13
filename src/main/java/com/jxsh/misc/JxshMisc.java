@@ -168,6 +168,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         loadDisabledPMs();
 
         // Core Managers
+        this.databaseManager = new DatabaseManager(this);
         this.commandManager = new CommandManager(this);
         this.spawnManager = new SpawnManager(this);
         getServer().getPluginManager().registerEvents(spawnManager, this);
