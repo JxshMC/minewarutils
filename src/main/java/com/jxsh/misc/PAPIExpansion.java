@@ -110,67 +110,59 @@ public class PAPIExpansion extends PlaceholderExpansion {
         if (params.equals("tempop_time_left")) {
             com.jxsh.misc.managers.TempOpManager tempOpManager = plugin.getTempOpManager();
             if (tempOpManager == null)
-                return "";
+                return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
 
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
-            if (data == null)
-                return ""; // Or "no-time"? But usually empty if not opped.
 
-            String result = "";
-            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
+            // Check if player is OP but not in our system (Vanilla OP)
+            if (data == null) {
+                if (player.isOp()) {
+                    // If vanilla OP, maybe we show "Permanent"? Or "N/A"?
+                    // User said: "None: Return commands.tempop.no-time."
+                    // But strictly speaking, if they are OP, they have permissions.
+                    // However, following the task: "If no OP data exists... return no-time"
+                    return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
+                }
+                return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
+            }
+
+            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+                return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm", "Permanent");
+            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP) { // Relog-only
+                return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp",
+                        "Expire-Relog");
+            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
                 long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
                 if (remaining < 0)
                     remaining = 0;
-                result = formatDurationDynamic(remaining);
-            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
-                result = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm",
-                        "Permanent");
-            } else {
-                result = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp",
-                        "Expire-Relog");
+
+                String format = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-format",
+                        "%days%d, %hours%h, %minutes%m, %seconds%s");
+                return formatDurationConfigurable(remaining, format);
             }
-            return result;
+            return "";
         }
 
         return null;
     }
 
-    private String formatDurationDynamic(long totalSeconds) {
-        if (totalSeconds <= 0)
-            return "Expired";
-
+    private String formatDurationConfigurable(long totalSeconds, String format) {
         long days = totalSeconds / 86400;
         long hours = (totalSeconds % 86400) / 3600;
         long minutes = (totalSeconds % 3600) / 60;
         long seconds = totalSeconds % 60;
 
-        String format = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-format",
-                "%days%d, %hours%h, %minutes%m, %seconds%s");
+        // Logic: If a unit is 0, we might want to hide it if the user wants.
+        // But the format string is %days%d etc.
+        // If the format contains explicit keys, we replace them.
 
-        // Hide 0 units logic:
-        // We can't strictly use the format string if we are hiding units, because the
-        // separators (commas) might be left dangling.
-        // But the user said: "Logic: If a unit is 0, hide it."
-        // And "time-left-format: %days%d, %hours%h, %minutes%m, %seconds%s"
-        // This suggests we should build it dynamically based on the PRESENCE of units.
-        // OR we replace 0 units with empty string?
-        // "0d, " -> ""? That leaves ", ".
-        // Let's build it dynamically using the suffix from the config?
-        // Actually, typically "Hide 0 units" means building a list of non-zero parts.
+        // Simple replacement
+        String result = format
+                .replace("%days%", String.valueOf(days))
+                .replace("%hours%", String.valueOf(hours))
+                .replace("%minutes%", String.valueOf(minutes))
+                .replace("%seconds%", String.valueOf(seconds));
 
-        java.util.List<String> parts = new java.util.ArrayList<>();
-        if (days > 0)
-            parts.add(days + "d");
-        if (hours > 0)
-            parts.add(hours + "h");
-        if (minutes > 0)
-            parts.add(minutes + "m");
-        if (seconds > 0)
-            parts.add(seconds + "s");
-
-        if (parts.isEmpty())
-            return "0s"; // Or "Expired"?
-
-        return String.join(", ", parts);
+        return result;
     }
 }
