@@ -433,7 +433,7 @@ public class ConfigManager {
         if (config == null)
             return internalKey;
         // Default to internal key if not found
-        String path = "aliases." + internalKey + ".command";
+        String path = "utility.aliases." + internalKey + ".command";
         String val = config.getString(path, "/" + internalKey);
         if (val.startsWith("/")) {
             return val.substring(1);
@@ -444,20 +444,20 @@ public class ConfigManager {
     public java.util.List<String> getCommandAliases(String internalKey) {
         if (config == null)
             return new java.util.ArrayList<>();
-        return config.getStringList("aliases." + internalKey + ".aliases");
+        return config.getStringList("utility.aliases." + internalKey + ".aliases");
     }
 
     public String getSubCommandName(String mainKey, String subKey) {
         if (config == null)
             return subKey;
-        String path = "aliases." + mainKey + ".sub-commands." + subKey + ".command";
+        String path = "utility.aliases." + mainKey + ".sub-commands." + subKey + ".command";
         return config.getString(path, subKey);
     }
 
     public java.util.List<String> getSubCommandAliases(String mainKey, String subKey) {
         if (config == null)
             return new java.util.ArrayList<>();
-        String path = "aliases." + mainKey + ".sub-commands." + subKey + ".aliases";
+        String path = "utility.aliases." + mainKey + ".sub-commands." + subKey + ".aliases";
         return config.getStringList(path);
     }
 

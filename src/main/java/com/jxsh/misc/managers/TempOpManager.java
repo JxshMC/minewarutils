@@ -175,7 +175,7 @@ public class TempOpManager {
     }
 
     public void revokeOp(UUID receiverUUID, String reasonMsgKey) {
-        OpData data = activeOps.remove(receiverUUID); // Get data before removing
+        activeOps.remove(receiverUUID);
         save();
 
         Player receiver = Bukkit.getPlayer(receiverUUID);
@@ -183,19 +183,7 @@ public class TempOpManager {
 
         if (receiver != null) {
             receiver.setOp(false);
-
-            String msgKey = (reasonMsgKey != null) ? reasonMsgKey : "commands.op-manager.revoke";
-            // Check if we need to replace %target% (the giver)
-            String giverName = "Console";
-            if (data != null && data.giver != null) {
-                OfflinePlayer giver = Bukkit.getOfflinePlayer(data.giver);
-                if (giver.getName() != null)
-                    giverName = giver.getName();
-            }
-
-            receiver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString(msgKey, "<red>Your OP has been revoked.")
-                    .replace("%target%", giverName), receiver));
+            // Message strictly handled by DeopCommand/caller to avoid duplicates
         } else {
             offlineReceiver.setOp(false);
         }

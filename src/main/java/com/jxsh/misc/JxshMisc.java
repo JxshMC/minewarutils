@@ -76,7 +76,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     @Override
     public void onEnable() {
-        getLogger().info("Loading server plugin Minewar-Utils v" + getDescription().getVersion() + " by Jxsh");
+        getLogger().info("Loading server plugin Minewar-Utils v" + getPluginMeta().getVersion() + " by Jxsh");
         loadPluginSystem();
         getLogger().info("╔════════════════════════════════════════╗");
         getLogger().info("║  Minewar-Utils enabled successfully!   ║");
@@ -627,15 +627,14 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     public void loadConfigValues() {
         dev.dejvokep.boostedyaml.YamlDocument config = configManager.getConfig();
-        // New structure: simple list
-        enabledUsers = config.getStringList("enabled-users"); // No change, key exists in v9
+        // New structure: cosmetics.crouch-settings.enabled-users
+        enabledUsers = config.getStringList("cosmetics.crouch-settings.enabled-users");
         if (enabledUsers == null) {
             enabledUsers = new ArrayList<>();
         }
 
-        // drop-item keys moved to root in v9 (same as before effectively for this
-        // method, but validation)
-        String materialName = config.getString("drop-item-type", "DIAMOND");
+        // drop-item keys moved to cosmetics in v3 strict
+        String materialName = config.getString("cosmetics.drop-item-type", "DIAMOND");
         if (materialName.equalsIgnoreCase("NONE") || materialName.equalsIgnoreCase("AIR")) {
             dropItemType = Material.AIR;
         } else {
@@ -647,12 +646,12 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
             }
         }
 
-        dropItemName = config.getString("drop-item-name", "");
-        dropItemEnabled = config.getBoolean("drop-item-enabled", false); // Default false in v9
+        dropItemName = config.getString("cosmetics.drop-item-name", "");
+        dropItemEnabled = config.getBoolean("cosmetics.drop-item-enabled", false);
 
-        dropDurationSeconds = config.getInt("drop-duration-seconds", 5);
+        dropDurationSeconds = config.getInt("cosmetics.drop-duration-seconds", 5);
 
-        String particleName = config.getString("particle-type", "HEART");
+        String particleName = config.getString("cosmetics.particle-type", "HEART");
         try {
             particleType = Particle.valueOf(particleName);
         } catch (IllegalArgumentException e) {
@@ -660,8 +659,8 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
             particleType = Particle.HEART;
         }
 
-        particleCount = config.getInt("particle-count", 1);
-        particleDurationSeconds = config.getInt("particle-duration-seconds", 1);
+        particleCount = config.getInt("cosmetics.particle-count", 1);
+        particleDurationSeconds = config.getInt("cosmetics.particle-duration-seconds", 1);
 
         onCrouchMessage = configManager.getMessages().getString("on-crouch", "");
     }

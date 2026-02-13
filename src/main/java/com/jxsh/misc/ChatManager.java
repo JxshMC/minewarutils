@@ -45,17 +45,17 @@ public class ChatManager implements Listener {
     }
 
     public void loadConfig() {
-        this.enabled = plugin.getConfigManager().getConfig().getBoolean("chat.enabled", true);
-        this.clickableLinks = plugin.getConfigManager().getConfig().getBoolean("chat.clickable-links", true);
-        this.linkFormat = plugin.getConfigManager().getConfig().getString("chat.link-format",
+        this.enabled = plugin.getConfigManager().getConfig().getBoolean("utility.chat.enabled", true);
+        this.clickableLinks = plugin.getConfigManager().getConfig().getBoolean("utility.chat.clickable-links", true);
+        this.linkFormat = plugin.getConfigManager().getConfig().getString("utility.chat.link-format",
                 "<aqua><u>%link%</u></aqua>");
-        this.defaultFormat = plugin.getConfigManager().getConfig().getString("chat.format",
+        this.defaultFormat = plugin.getConfigManager().getConfig().getString("utility.chat.format",
                 "<white>%player%</white>: <gray>%message%</gray>");
 
         groupFormats.clear();
-        if (plugin.getConfigManager().getConfig().contains("chat.group-formats")) {
+        if (plugin.getConfigManager().getConfig().contains("utility.group-formats")) {
             dev.dejvokep.boostedyaml.block.implementation.Section section = plugin.getConfigManager().getConfig()
-                    .getSection("chat.group-formats");
+                    .getSection("utility.group-formats");
             if (section != null) {
                 for (Object key : section.getKeys()) {
                     String group = key.toString();
@@ -67,13 +67,34 @@ public class ChatManager implements Listener {
             }
         }
 
-        this.mentionsEnabled = plugin.getConfigManager().getConfig().getBoolean("chat.mentions.enabled", true);
+        this.mentionsEnabled = plugin.getConfigManager().getConfig().getBoolean("utility.mentions.enabled", true); // Actually
+                                                                                                                   // config
+                                                                                                                   // implies
+                                                                                                                   // utility.mentions
+                                                                                                                   // is
+                                                                                                                   // the
+                                                                                                                   // section
+        // Check config provided: utility: mentions: ...
+        // It has sound, volume, pitch. Enabled?
+        // features: mentions: true.
+        // So enabled check should be features.mentions? Or utility.mentions.enabled?
+        // Config provided: utility: mentions: sound: ...
+        // No enabled key in utility.mentions.
+        // features: mentions: true.
+
+        // I should use isFeatureEnabled("mentions") for enabled check?
+        // Existing code used "chat.mentions.enabled".
+
+        // Let's assume standard feature check for enabled.
+        this.mentionsEnabled = plugin.getConfigManager().isFeatureEnabled("mentions");
+
         this.mentionFormat = plugin.getConfigManager().getMessages().getString("mentions.format",
                 "<yellow>@%player%</yellow>");
-        this.mentionSound = plugin.getConfigManager().getConfig().getString("chat.mentions.sound",
+        this.mentionSound = plugin.getConfigManager().getConfig().getString("utility.mentions.sound",
                 "minecraft:entity.villager.ambient");
-        this.mentionVolume = plugin.getConfigManager().getConfig().getDouble("chat.mentions.volume", 1.0).floatValue();
-        this.mentionPitch = plugin.getConfigManager().getConfig().getDouble("chat.mentions.pitch", 1.0).floatValue();
+        this.mentionVolume = plugin.getConfigManager().getConfig().getDouble("utility.mentions.volume", 1.0)
+                .floatValue();
+        this.mentionPitch = plugin.getConfigManager().getConfig().getDouble("utility.mentions.pitch", 1.0).floatValue();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

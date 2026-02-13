@@ -36,6 +36,10 @@ public class TempOpListener implements Listener {
                         && System.currentTimeMillis() >= data.expiration) {
                     // Expired while offline
                     tempOpManager.revokeOp(uuid);
+                    event.getPlayer().sendMessage(plugin.parseText(
+                            plugin.getConfigManager().getMessages().getString("commands.op-manager.revoke",
+                                    "<red>Your OP has been revoked."),
+                            event.getPlayer()));
                 } else {
                     // Still active (Time or Perm)
                     if (!event.getPlayer().isOp()) {
