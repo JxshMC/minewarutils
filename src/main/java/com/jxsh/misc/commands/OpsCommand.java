@@ -113,8 +113,12 @@ public class OpsCommand extends BaseCommand {
             // Let's try to replace "[Permanent]" too, just in case they hardcoded it.
             format = format.replace("[Permanent]", status);
 
+            // Fix: Pass OfflinePlayer 'p' directly. parseText accepts OfflinePlayer.
+            // Previously: p instanceof Player ? (Player) p : null
+            // This caused offline players to be treated as null, falling back to viewer
+            // context.
             tempFormatted.add(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage()
-                    .serialize(plugin.parseText(format, p instanceof Player ? (Player) p : null)));
+                    .serialize(plugin.parseText(format, p)));
         }
 
         String permStr = String.join(", ", permFormatted);

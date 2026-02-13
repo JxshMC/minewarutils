@@ -35,14 +35,14 @@ public class PAPIExpansion extends PlaceholderExpansion implements Relational {
     }
 
     @Override
-    public String onRequest(org.bukkit.OfflinePlayer player, @NotNull String params) {
-        if (player == null)
+    public String onRequest(org.bukkit.OfflinePlayer target, @NotNull String params) {
+        if (target == null)
             return "";
 
         // Resolve nested placeholders (e.g., %minewar_suffix_other%player%%)
-        params = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, params);
+        params = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(target, params);
         // Also resolve bracket placeholders for compatibility ({player_name})
-        params = me.clip.placeholderapi.PlaceholderAPI.setBracketPlaceholders(player, params);
+        params = me.clip.placeholderapi.PlaceholderAPI.setBracketPlaceholders(target, params);
 
         // %minewar_total% - Synced Global Total (Vanish-aware)
         if (params.equalsIgnoreCase("total")) {
@@ -71,24 +71,24 @@ public class PAPIExpansion extends PlaceholderExpansion implements Relational {
         // %minewar_vanished%
         if (params.equalsIgnoreCase("vanished")) {
             boolean vanished = plugin.getVanishPacketListener() != null
-                    && plugin.getVanishPacketListener().isVanished(player.getUniqueId());
+                    && plugin.getVanishPacketListener().isVanished(target.getUniqueId());
             return vanished ? "True" : "False";
         }
 
         // %minewar_buildmode%
         if (params.equalsIgnoreCase("buildmode")) {
             boolean enabled = plugin.getBuildModeManager() != null
-                    && plugin.getBuildModeManager().isBuildModeEnabled(player.getUniqueId());
+                    && plugin.getBuildModeManager().isBuildModeEnabled(target.getUniqueId());
             return enabled ? "True" : "False";
         }
 
         // %minewar_buildmode_<player>%
         if (params.toLowerCase().startsWith("buildmode_")) {
             String targetName = params.substring(10);
-            Player target = Bukkit.getPlayer(targetName);
-            if (target != null) {
+            Player p = Bukkit.getPlayer(targetName);
+            if (p != null) {
                 boolean enabled = plugin.getBuildModeManager() != null
-                        && plugin.getBuildModeManager().isBuildModeEnabled(target.getUniqueId());
+                        && plugin.getBuildModeManager().isBuildModeEnabled(p.getUniqueId());
                 return enabled ? "True" : "False";
             }
             return "False";
@@ -109,7 +109,7 @@ public class PAPIExpansion extends PlaceholderExpansion implements Relational {
         }
 
         if (params.equals("tempop_time_left")) {
-            return getTempOpTimeLeft(player.getUniqueId());
+            return getTempOpTimeLeft(target.getUniqueId());
         }
 
         return null;
