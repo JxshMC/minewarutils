@@ -1,5 +1,6 @@
 package com.jxsh.misc;
 
+import com.jxsh.misc.utils.CenteringManager;
 import me.clip.placeholderapi.PlaceholderAPI;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -34,9 +35,13 @@ public class ScoreboardManager implements Listener {
     private String title;
     private List<String> lines;
     private int updateInterval;
-    private Map<String, String> customPlaceholders;
-    // Dynamic Placeholders configuration
-    private Map<String, String> dynamicTempOp; // Stores config for temp-op
+
+    // Stage 1 Config
+    private Map<String, String> staticPlaceholders; // "placeholders" section
+    private Map<String, Map<String, String>> replacements; // "Replacements" section
+
+    // Stage 2 Config
+    private Map<String, String> dynamicTempOp; // "dynamic-placeholders.temp-op"
 
     private BukkitTask updateTask;
     private final Map<UUID, Scoreboard> playerScoreboards = new HashMap<>();
@@ -59,17 +64,36 @@ public class ScoreboardManager implements Listener {
             lines = config.getStringList("Scoreboard");
             updateInterval = config.getInt("update-interval", 20);
 
-            customPlaceholders = new HashMap<>();
+            // Load Stage 1: Static Placeholders
+            staticPlaceholders = new HashMap<>();
             if (config.isSection("placeholders")) {
                 dev.dejvokep.boostedyaml.block.implementation.Section section = config.getSection("placeholders");
                 for (Object key : section.getKeys()) {
-                    String sKey = key.toString();
-                    String sVal = section.getString(Route.from(key), "");
-                    customPlaceholders.put(sKey, sVal);
+                    staticPlaceholders.put(key.toString(), section.getString(Route.from(key), ""));
                 }
             }
 
-            // Load dynamic-placeholders section
+            // Load Stage 1: Replacements
+            replacements = new HashMap<>();
+            if (config.isSection("Replacements")) {
+                dev.dejvokep.boostedyaml.block.implementation.Section replSection = config.getSection("Replacements");
+                for (Object key : replSection.getKeys()) {
+                    // Key is the PAPI string, e.g. "%luckperms_prefix%"
+                    String baseKey = key.toString();
+                    if (replSection.isSection(Route.from(key))) {
+                        dev.dejvokep.boostedyaml.block.implementation.Section inner = replSection
+                                .getSection(Route.from(key));
+                        Map<String, String> innerMap = new HashMap<>();
+                        for (Object innerKey : inner.getKeys()) {
+                            // Inner key is the target value to match (e.g. "")
+                            innerMap.put(innerKey.toString(), inner.getString(Route.from(innerKey), ""));
+                        }
+                        replacements.put(baseKey, innerMap);
+                    }
+                }
+            }
+
+            // Load Stage 2: Dynamic Placeholders
             dynamicTempOp = new HashMap<>();
             if (config.isSection("dynamic-placeholders.temp-op")) {
                 dev.dejvokep.boostedyaml.block.implementation.Section section = config
@@ -131,13 +155,23 @@ public class ScoreboardManager implements Listener {
     private void setupScoreboard(Player player) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective objective = scoreboard.registerNewObjective("sidebar", Criteria.DUMMY,
-                MiniMessage.miniMessage().deserialize(title)); // Initial title, updated dynamically later
+                MiniMessage.miniMessage().deserialize(processTitle(title, player)));
 
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         player.setScoreboard(scoreboard);
         playerScoreboards.put(player.getUniqueId(), scoreboard);
         updateScoreboard(player);
+    }
+
+    private String processTitle(String text, Player player) {
+        // Simple processing for title: Static -> PAPI. No complex dynamic logic usually
+        // needed for title base.
+        String processed = applyStaticPlaceholders(text);
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            processed = PlaceholderAPI.setPlaceholders(player, processed);
+        }
+        return processed;
     }
 
     private void updateScoreboard(Player player) {
@@ -150,154 +184,181 @@ public class ScoreboardManager implements Listener {
             return;
 
         // Update Title
-        String parsedTitle = applyPlaceholders(title, player);
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            parsedTitle = PlaceholderAPI.setPlaceholders(player, parsedTitle);
-        }
+        String parsedTitle = processTitle(title, player);
         objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));
 
-        // Process Lines (Dynamic Logic)
-        List<String> processedLines = new ArrayList<>();
+        // --- Processing Pipeline ---
+        List<String> finalLines = new ArrayList<>();
 
-        for (String line : lines) {
-            // 1. {temp-op} Handler
-            if (line.contains("{temp-op}")) {
-                if (!processTempOpLine(line, player, processedLines)) {
-                    continue; // Line removed
-                }
-                // processTempOpLine handles adding to processedLines if valid
-            } else {
-                // Normal line processing
-                String processed = applyPlaceholders(line, player);
+        for (String rawLine : lines) {
+            // Stage 1: Static Logic (Placeholders + Replacements)
+            String stage1 = applyStage1(rawLine, player);
+
+            // Stage 2: Dynamic Logic ({temp-op} triggers)
+            // If returns null, line is killed.
+            String stage2 = applyStage2(stage1, player);
+            if (stage2 == null)
+                continue; // Kill Switch Pipeline
+
+            // Visual Engine: {newline} splitter
+            // If line contains {newline}, split it.
+            // Note: split() can return array. We need to handle list insertion.
+            List<String> splitLines = applyNewlineSplit(stage2);
+
+            // Add to final list
+            for (String split : splitLines) {
+                // Final PAPI pass for any remaining placeholders (standard ones)
+                String finalPass = split;
                 if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    processed = PlaceholderAPI.setPlaceholders(player, processed);
+                    finalPass = PlaceholderAPI.setPlaceholders(player, finalPass);
                 }
-                processNewline(processed, processedLines);
+
+                // Visual Engine: {centre}
+                finalPass = applyCentering(finalPass);
+
+                finalLines.add(finalPass);
             }
         }
 
-        // Assign Scores (Reverse Loop)
-        // Score 15 (Top) -> Score 1 (Bottom)
-        // Adjust scores based on list size
-        int score = processedLines.size();
+        // --- Update Scoreboard Teams ---
+        // Iterate 15 down to 1 (or size)
 
-        // Clean up old teams/entries to prevent ghosts?
-        // Ideally we assume max lines 15. We can clear scores < current size?
-        // Or cleaner: Reset all scores/teams.
-        // For performance, we update existing teams.
-        // We need to clear scores that are no longer used (e.g. if list shrank).
-
+        // Cleanup: Reset scores > size
         for (String entry : scoreboard.getEntries()) {
-            if (objective.getScore(entry).getScore() > processedLines.size()) {
+            org.bukkit.scoreboard.Score sc = objective.getScore(entry);
+            if (sc.isScoreSet() && sc.getScore() > finalLines.size()) {
                 scoreboard.resetScores(entry);
             }
         }
 
-        // Since we map lines to scores 1..N, we can just overwrite.
-        // But if we had 10 lines and now 9, score 10 needs to be removed.
-        // Better: Clear all scores for this objective? No, that flickers.
-
-        // We iterate 15 down to 1.
+        // Assign lines
         for (int i = 0; i < 15; i++) {
-            // If we have a line for this slot (index = i from top?)
-            // Standard: index 0 is top line -> Highest Score.
             int lineIndex = i;
-            int currentScore = processedLines.size() - i;
+            int score = finalLines.size() - i;
 
-            if (lineIndex < processedLines.size()) {
-                updateLine(scoreboard, objective, currentScore, processedLines.get(lineIndex));
+            if (score < 1)
+                break; // Should not happen if loop based on 15
+
+            if (lineIndex < finalLines.size()) {
+                updateLine(scoreboard, objective, score, finalLines.get(lineIndex));
             } else {
-                // Remove this score/line if it exists
-                removeLine(scoreboard, currentScore);
+                removeLine(scoreboard, score);
             }
         }
     }
 
-    // Returns false if line should be removed
-    private boolean processTempOpLine(String line, Player player, List<String> output) {
+    // --- Stage 1 ---
+    private String applyStage1(String text, Player player) {
+        // 1. Static Placeholders
+        String result = applyStaticPlaceholders(text);
+
+        // 2. Replacements Engine
+        if (replacements != null) {
+            for (Map.Entry<String, Map<String, String>> entry : replacements.entrySet()) {
+                String papiKey = entry.getKey(); // e.g. %luckperms_prefix%
+                Map<String, String> rules = entry.getValue();
+
+                if (result.contains(papiKey)) {
+                    String resolved = "";
+                    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                        resolved = PlaceholderAPI.setPlaceholders(player, papiKey);
+                    }
+                    if (resolved == null)
+                        resolved = "";
+
+                    // Logic: If resolved is empty "", check for rule ""
+                    if (resolved.isEmpty() && rules.containsKey("")) {
+                        result = result.replace(papiKey, rules.get(""));
+                    } else if (rules.containsKey(resolved)) {
+                        result = result.replace(papiKey, rules.get(resolved));
+                    } else {
+                        // Default logic: just replace with resolved value
+                        result = result.replace(papiKey, resolved);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    // --- Stage 2 ---
+    // Returns null if line should be removed
+    private String applyStage2(String text, Player player) {
+        if (!text.contains("{temp-op}")) {
+            return text;
+        }
+
         String timeLeft = "";
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             timeLeft = PlaceholderAPI.setPlaceholders(player, "%tempop_time_left%");
         }
 
-        // Check dynamic placeholders config
-        String replacement = null;
+        // Dynamic Logic
+        // Check 1: "Expire-Relog"
+        if (timeLeft.equalsIgnoreCase("Expire-Relog") && dynamicTempOp.containsKey("Expire-Relog")) {
+            return text.replace("{temp-op}", dynamicTempOp.get("Expire-Relog"));
+        }
 
-        // Logic:
-        // 1. Exact Match (e.g. "Expire-Relog")
-        if (dynamicTempOp != null && dynamicTempOp.containsKey(timeLeft)) {
-            replacement = dynamicTempOp.get(timeLeft);
-        } else {
-            // 2. Regex Match for Time (d, h, m, s)
-            // "If output contains a time pattern... replace with 'Expires in...'"
-            // We check checks if it contains digits followed by d/h/m/s
-            if (timeLeft.matches(".*\\d+[dhms].*")) {
-                // It's a time. Use "time" key from config if exists, or default?
-                // User said: "replace {temp-op} with the 'Expires in...' string"
-                // I assume there's a key in config for this case?
-                // Let's assume key is "time-format" or similar?
-                // Or maybe the user meant "If output contains time... replace with the
-                // formatted string ITSELF"?
-                // "replace {temp-op} with the 'Expires in...' string" implies a specific string
-                // from config.
-                // Let's look for a key called "active" or "time" in
-                // dynamic-placeholders.temp-op
-                if (dynamicTempOp != null && dynamicTempOp.containsKey("active")) {
-                    replacement = dynamicTempOp.get("active").replace("%time%", timeLeft);
-                } else {
-                    // Fallback: Just display the time?
-                    replacement = timeLeft;
-                }
+        // Check 2: Time Pattern (digits + d/h/m/s)
+        if (timeLeft.matches(".*\\d+[dhms].*")) {
+            if (dynamicTempOp.containsKey("active")) {
+                return text.replace("{temp-op}", dynamicTempOp.get("active").replace("%time%", timeLeft));
             }
+            return text.replace("{temp-op}", timeLeft);
         }
 
-        if (replacement == null) {
-            // "Line Removal: If ... does not match ... remove"
-            return false;
-        }
-
-        String processed = line.replace("{temp-op}", replacement);
-        processed = applyPlaceholders(processed, player);
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            processed = PlaceholderAPI.setPlaceholders(player, processed);
-        }
-
-        processNewline(processed, output);
-        return true;
+        // Check 3: Kill Switch
+        // If we reached here, it's neither Relog nor Active Time.
+        // Likely empty or "not active".
+        // The rule says: "If the OP status is inactive/empty, remove the line entirely"
+        return null;
     }
 
-    private void processNewline(String line, List<String> output) {
-        if (line.contains("{newline}")) {
-            String[] parts = line.split("\\{newline\\}");
-            for (String part : parts) {
-                // "If text after {newline}, display it... otherwise blank spacer"
-                // Split handles this. "Text{newline}" -> ["Text", ""] (if limit is negative)
-                // String.split(regex) discards trailing empty strings by default.
-                // We want to keep them.
-                output.add(part);
-            }
-        } else if (line.contains("\\n")) { // support \n just in case
-            String[] parts = line.split("\\\\n");
-            for (String part : parts)
-                output.add(part);
+    // --- Visual Engine ---
+    private List<String> applyNewlineSplit(String text) {
+        List<String> list = new ArrayList<>();
+        if (text.contains("{newline}")) {
+            String[] parts = text.split("\\{newline\\}");
+            for (String p : parts)
+                list.add(p);
+        } else if (text.contains("\n")) {
+            String[] parts = text.split("\n");
+            for (String p : parts)
+                list.add(p);
         } else {
-            output.add(line);
+            list.add(text);
         }
+        return list;
     }
+
+    private String applyCentering(String text) {
+        if (text.contains("{centre}")) {
+            String clean = text.replace("{centre}", "");
+            // Use CenteringManager
+            return CenteringManager.getCenteredMessage(clean);
+        }
+        return text;
+    }
+
+    // --- Helpers ---
 
     private void updateLine(Scoreboard sb, Objective obj, int score, String text) {
         String teamName = "line_" + score;
         Team team = sb.getTeam(teamName);
         if (team == null) {
             team = sb.registerNewTeam(teamName);
-            String entry = "§" + Integer.toHexString(score); // Unique entry
+            String entry = "§" + Integer.toHexString(score); // Unique entry 0-F
+            if (score > 15)
+                entry = "§" + score; // Fallback for >15, though unlikely
             team.addEntry(entry);
             obj.getScore(entry).setScore(score);
         }
-        // Update prefix
-        // Handle Legacy + MiniMessage mixed? Use serializer?
-        // text likely contains MiniMessage tags.
-        team.prefix(MiniMessage.miniMessage().deserialize(text));
+        try {
+            team.prefix(MiniMessage.miniMessage().deserialize(text));
+        } catch (Exception e) {
+            // Fallback for non-minimessage or errors
+            team.prefix(net.kyori.adventure.text.Component.text(text));
+        }
     }
 
     private void removeLine(Scoreboard sb, int score) {
@@ -311,12 +372,12 @@ public class ScoreboardManager implements Listener {
         }
     }
 
-    private String applyPlaceholders(String text, Player player) {
+    private String applyStaticPlaceholders(String text) {
+        if (staticPlaceholders == null || staticPlaceholders.isEmpty())
+            return text;
         String result = text;
-        if (customPlaceholders != null) {
-            for (Map.Entry<String, String> entry : customPlaceholders.entrySet()) {
-                result = result.replace(entry.getKey(), entry.getValue());
-            }
+        for (Map.Entry<String, String> entry : staticPlaceholders.entrySet()) {
+            result = result.replace(entry.getKey(), entry.getValue());
         }
         return result;
     }

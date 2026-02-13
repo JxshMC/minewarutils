@@ -27,6 +27,11 @@ placeholders:
   # Server name included in title.
   "{lobby_name}": "ɴᴏᴛ ᴄᴏɴғɪɢᴜʀᴇᴅ"
 
+Replacements:
+  "%luckperms_prefix%":
+    # Displays "No Rank" if the user is default rank (empty string).
+    "": "No Rank"
+
 dynamic-placeholders:
   temp-op:
     # Logic:
