@@ -68,21 +68,10 @@ public class CommandManager {
         }
     }
 
-    private BaseCommand getExecutorFor(String internalKey) {
-        // Map internal keys to actual command instances
-        // We need to instantiate them. Ideally we simply pass a map or factory.
-        // For now, let's look at how they were registered in JxshMisc.
-        // We need to reconstruct that logic here or call back to JxshMisc?
-        // Better: JxshMisc registers executors into a map in CommandManager, THEN we
-        // call registerAll...
-        // But JxshMisc was calling registerCommand directly.
-
-        // Refactor: We need a way to look up the executor.
-        // Let's assume JxshMisc will populate a map of "internalKey" -> "Executor"
-        // BEFORE
-        // calling registerAll.
-        return executors.get(internalKey);
-    }
+    // Refactor: We need a way to look up the executor.
+    // Let's assume JxshMisc will populate a map of "internalKey" -> "Executor"
+    // BEFORE calling registerAll.
+    // return executors.get(internalKey);
 
     private final Map<String, BaseCommand> executors = new java.util.HashMap<>();
 

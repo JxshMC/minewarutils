@@ -181,66 +181,15 @@ worlds:
 #              COMMAND ALIASES
 # ==========================================
 aliases:
-  # Core & Utils
-  minewarutils: "minewarutils"
-  help: "help"
-  top: "top"
-  bottom: "bottom"
-  heal: "heal"
-  eat: "eat"
-  fly: "fly"
-  flyspeed: "flyspeed"
-  gamemode: "gamemode"
-  gmc: "gmc"
-  gms: "gms"
-  gma: "gma"
-  gmsp: "gmsp"
-  inventorysee: "inventorysee"
-  clearinventory: "clearinventory"
-  give: "give"
-  head: "head"
-  setspawn: "setspawn"
-  spawn: "spawn"
-  mutechat: "mutechat"
-  slowchat: "slowchat"
-  clearchat: "clearchat"
-  mentiontoggle: "mentiontoggle"
-  itemname: "itemname"
-  lore: "lore"
-  
-  # Build Mode
-  buildmode: "buildmode"
-  bmadmin: "bmadmin"
-  bmreset: "bmreset"
-  
-  # Fun
-  poopgun: "poopgun"
-  devarmour: "devarmour"
-  forcefield: "forcefield"
-  
-  # Warps & Kits
-  setwarp: "setwarp"
-  warp: "warp"
-  warps: "warps"
-  deletewarp: "deletewarp"
-  editwarp: "editwarp"
-  createkit: "createkit"
-  kit: "kit"
-  kits: "kits"
-  deletekit: "deletekit"
-  editkit: "editkit"
-  
-  # Op Manager
-  tempop: "tempop"
-  tempop-remove: "tempop-remove"
-  deop: "deop"
-  ops: "ops"
-
-  # Shortcuts / Existing Aliases
+  gmc: "gamemode creative"
+  gms: "gamemode survival"
+  gma: "gamemode adventure"
+  gmsp: "gamemode spectator"
   day: "time set day"
   night: "time set night"
   sun: "weather clear"
   rain: "weather rain"
+  fly: "fly" # Requires features.custom-commands: true
 
 # ==========================================
 #            LUCKPERMS HOOK
