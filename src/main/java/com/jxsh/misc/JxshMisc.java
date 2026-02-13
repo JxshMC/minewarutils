@@ -135,6 +135,10 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         // HelpCommand is now registered via CommandManager in registerCommands()
 
+        // 2. Initialize Database Manager EARLY (Required by ScoreboardManager and
+        // others)
+        this.databaseManager = new DatabaseManager(this);
+
         // 3. Initialize Managers & Listeners
         scoreboardManager = new ScoreboardManager(this);
         getServer().getPluginManager().registerEvents(scoreboardManager, this);
@@ -170,7 +174,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         loadDisabledPMs();
 
         // Core Managers
-        this.databaseManager = new DatabaseManager(this);
+        // DatabaseManager initialized earlier
         this.commandManager = new CommandManager(this);
         this.spawnManager = new SpawnManager(this);
         getServer().getPluginManager().registerEvents(spawnManager, this);

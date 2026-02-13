@@ -25,9 +25,6 @@ public class DatabaseManager {
     }
 
     private void connect() {
-        // 1. Path Safety (Sync)
-        new java.io.File(plugin.getDataFolder(), "Database").mkdirs();
-
         // 2. Async Initialization
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2").toUpperCase();
@@ -35,6 +32,15 @@ public class DatabaseManager {
 
             // 1. Storage Type Detection & Specific URL
             if (type.equals("MARIADB")) {
+                // EXPLICITLY LOAD DRIVER for MariaDB to prevent "No suitable driver" error
+                try {
+                    Class.forName("org.mariadb.jdbc.Driver");
+                } catch (ClassNotFoundException e) {
+                    plugin.getLogger().severe("MariaDB Driver class not found! Ensure the library is shaded properly.");
+                    e.printStackTrace();
+                    return; // Abort if driver missing
+                }
+
                 String host = plugin.getConfigManager().getConfig().getString("storage.host");
                 String port = plugin.getConfigManager().getConfig().getString("storage.port");
                 String database = plugin.getConfigManager().getConfig().getString("storage.database");
@@ -46,6 +52,9 @@ public class DatabaseManager {
                 config.setPassword(password);
             } else {
                 // IF H2: relative path with ./ mandatory
+                // Move Sync Path Safety here
+                new java.io.File(plugin.getDataFolder(), "Database").mkdirs();
+
                 config.setJdbcUrl(
                         "jdbc:h2:file:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE");
                 config.setDriverClassName("org.h2.Driver");
