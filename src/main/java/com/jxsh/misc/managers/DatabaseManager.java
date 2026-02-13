@@ -19,11 +19,11 @@ public class DatabaseManager {
     }
 
     private void connect() {
-        String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2");
+        String type = plugin.getConfigManager().getConfig().getString("storage.type", "H2").toUpperCase();
 
         HikariConfig config = new HikariConfig();
 
-        if (type.equalsIgnoreCase("MARIADB")) {
+        if (type.equals("MARIADB")) {
             String host = plugin.getConfigManager().getConfig().getString("storage.host");
             String port = plugin.getConfigManager().getConfig().getString("storage.port");
             String database = plugin.getConfigManager().getConfig().getString("storage.database");
@@ -35,7 +35,13 @@ public class DatabaseManager {
             config.setPassword(password);
         } else {
             // Default H2
-            config.setJdbcUrl("jdbc:h2:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL");
+            // Use DB_CLOSE_DELAY=0 to ensure it closes immediately when the last connection
+            // is
+            // closed.
+            // Use AUTO_SERVER=TRUE to allow mixed mode (though less relevant with
+            // CLOSE_DELAY=0, it's safer for reloads).
+            config.setJdbcUrl(
+                    "jdbc:h2:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=0");
             config.setDriverClassName("org.h2.Driver");
         }
 
@@ -47,12 +53,48 @@ public class DatabaseManager {
         config.setConnectionTimeout(
                 plugin.getConfigManager().getConfig().getInt("storage.pool-settings.connection-timeout", 5000));
 
-        dataSource = new HikariDataSource(config);
+        // Retry logic for H2 file locks during reloads
+        int attempts = 5; // Increased to 5
+        for (int i = 0; i < attempts; i++) {
+            try {
+                dataSource = new HikariDataSource(config);
+                // Test connection
+                try (Connection conn = dataSource.getConnection()) {
+                    if (conn.isValid(1)) {
+                        plugin.getLogger().info("Database connected successfully!");
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                if (i == attempts - 1) {
+                    plugin.getLogger().severe("Failed to connect to database after " + attempts + " attempts!");
+                    e.printStackTrace();
+                    // Fallback or disable?
+                    // If we return, dataSource is null/invalid.
+                    return;
+                } else {
+                    plugin.getLogger().warning("Database lock detected, retrying in 2 seconds... (Attempt " + (i + 1)
+                            + "/" + attempts + ")");
+                    if (dataSource != null && !dataSource.isClosed()) {
+                        dataSource.close();
+                    }
+                    try {
+                        Thread.sleep(2000); // Increased to 2 seconds
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
 
-        initTables();
+        if (dataSource != null && !dataSource.isClosed()) {
+            initTables();
+        }
     }
 
     private void initTables() {
+        if (dataSource == null || dataSource.isClosed())
+            return;
+
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
             // BuildMode Table
             stmt.execute("CREATE TABLE IF NOT EXISTS buildmode_data (" +
@@ -75,12 +117,23 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
+        if (dataSource == null) {
+            throw new SQLException("DataSource is null (Database not connected)");
+        }
         return dataSource.getConnection();
     }
 
     public void close() {
         if (dataSource != null) {
-            dataSource.close();
+            try {
+                if (!dataSource.isClosed()) {
+                    dataSource.close();
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Error closing DataSource: " + e.getMessage());
+            } finally {
+                dataSource = null;
+            }
         }
     }
 }

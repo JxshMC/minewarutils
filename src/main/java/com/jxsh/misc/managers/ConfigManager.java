@@ -510,6 +510,14 @@ public class ConfigManager {
             case "bmadmin":
             case "bmreset":
                 return "buildmode";
+            case "mutechat":
+            case "slowchat":
+            case "clearchat":
+                return "chat";
+            case "mentiontoggle":
+                return "mentions";
+            case "forcefield":
+                return "cosmetics";
             default:
                 return null;
         }
