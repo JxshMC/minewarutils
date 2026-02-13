@@ -1,4 +1,4 @@
-config-version: !!int "2"
+config-version: !!int "3"
 #Jxsh-Core v1
 
 # Feature Toggles (Enable/Disable command groups)

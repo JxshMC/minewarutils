@@ -1,4 +1,4 @@
-config-version: 2
+config-version: 3
 # Permission Configuration
 # Map internal command keys to the actual permission nodes required
 # You can change the values here to use different permission strings if desired.

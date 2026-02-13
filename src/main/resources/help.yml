@@ -1,4 +1,4 @@
-config-version: 1
+config-version: 3
 help:
   header: <gradient:#ccffff:#0adef7><b>Minewar</b> Help <#0adef7>(Page %page%/%total%)
   footer: <#ccffff>Use <#0adef7>/help <page> <#ccffff>to view the next page.
