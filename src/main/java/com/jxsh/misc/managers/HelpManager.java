@@ -70,6 +70,12 @@ public class HelpManager {
     }
 
     public void showHelp(CommandSender sender, int page) {
+        if (helpConfig == null) {
+            sender.sendMessage(plugin.parseText("<red>Help configuration failed to load.",
+                    sender instanceof Player ? (Player) sender : null));
+            return;
+        }
+
         if (!plugin.getConfigManager().getConfig().getBoolean("help-system.enabled", true)) {
             sender.sendMessage(plugin.parseText("<red>Help system is disabled.",
                     sender instanceof Player ? (Player) sender : null));

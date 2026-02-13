@@ -6,9 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import java.util.UUID;
-import java.util.List;
-import java.util.Collections;
 
 public class DeopCommand extends BaseCommand {
 
@@ -16,29 +15,27 @@ public class DeopCommand extends BaseCommand {
     private final TempOpManager tempOpManager;
 
     public DeopCommand(JxshMisc plugin, TempOpManager tempOpManager) {
-        super(plugin, "tempop-remove", true);
+        super(plugin, "deop", true);
         this.plugin = plugin;
         this.tempOpManager = tempOpManager;
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
+        if (!sender.hasPermission("minewar.deop") && !sender.isOp()) { // Fallback perm check
+            sender.sendMessage(plugin.parseText(
+                    plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), null));
+            return;
+        }
 
         if (args.length < 1) {
-            sender.sendMessage(plugin
-                    .parseText("<red>Usage: /deop <player>", player));
+            sender.sendMessage(plugin.parseText("<red>Usage: /deop <player>", null));
             return;
         }
 
         String targetName = args[0];
-        // Permission check for deop specifically
-        if (!plugin.hasPermission(player, "tempop-remove")) {
-            sender.sendMessage(plugin.parseText(
-                    plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), player));
-            return;
-        }
 
+        // Try online
         Player target = Bukkit.getPlayer(targetName);
         UUID targetUUID = null;
 
@@ -51,31 +48,37 @@ public class DeopCommand extends BaseCommand {
             }
         }
 
-        if (targetUUID == null || !tempOpManager.isTempOpp(targetUUID)) {
-            OfflinePlayer off = Bukkit.getOfflinePlayer(targetName);
-            if (off.isOp()) {
-                off.setOp(false);
-                sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                        .getString("commands.tempop.revoke-sender", "<green>Op revoked from %target%.")
-                        .replace("%target%", targetName), player)); // Fixed sender type
-                return;
-            }
-
-            sender.sendMessage(plugin.parseText("<red>That player is not temporarily opped.", player));
+        if (targetUUID == null) {
+            sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.error.invalid-player").replace("%target%", targetName), null));
             return;
         }
 
-        tempOpManager.revokeOp(targetUUID);
+        // Logic: If in temp op map, revoke it. If vanilla op, deop.
+        if (tempOpManager.isTempOpp(targetUUID)) {
+            tempOpManager.revokeOp(targetUUID);
+        } else {
+            // Vanilla DeOp
+            OfflinePlayer off = Bukkit.getOfflinePlayer(targetUUID);
+            if (off.isOp()) {
+                off.setOp(false);
+            } else {
+                sender.sendMessage(plugin.parseText("<red>That player is not opped.", null));
+                return;
+            }
+        }
+
         sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                .getString("commands.tempop.revoke-sender", "<green>TempOp revoked from %target%.")
-                .replace("%target%", targetName), player));
+                .getString("commands.tempop.revoke-sender", "<green>Op revoked from %target%.")
+                .replace("%target%", targetName), null));
     }
 
     @Override
-    protected List<String> tabComplete(CommandSender sender, String[] args) {
+    protected java.util.List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
+            // Suggest all OPs? Or just online players?
             return getOnlinePlayerNames(sender);
         }
-        return Collections.emptyList();
+        return java.util.Collections.emptyList();
     }
 }

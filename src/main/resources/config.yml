@@ -55,7 +55,7 @@ MOTD: #The message sent to player on join
   enabled: false
 
 # Tab-Complete Settings (Command Suggestion Blocking)
-# Players without "minewar.admin.tabcomplete" permission will only see these commands
+# Players without "minewar.tabcomplete.bypass" permission will only see these commands
 tab-complete:
   # List of commands that non-admin players can see when pressing Tab
   # Leave empty [] to hide ALL commands from non-admins

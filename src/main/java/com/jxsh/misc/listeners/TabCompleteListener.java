@@ -26,7 +26,7 @@ public class TabCompleteListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onTabComplete(AsyncTabCompleteEvent event) {
         // 1. Allow console and players with bypass permission
-        if (event.getSender().hasPermission("minewar.admin.tabcomplete")) {
+        if (event.getSender().hasPermission("minewar.tabcomplete.bypass")) {
             return;
         }
 
@@ -65,7 +65,7 @@ public class TabCompleteListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCommandSend(PlayerCommandSendEvent event) {
-        if (!event.getPlayer().hasPermission("minewar.admin.tabcomplete")) {
+        if (!event.getPlayer().hasPermission("minewar.tabcomplete.bypass")) {
             // Get list of allowed commands from config
             List<String> allowedCommands = plugin.getConfigManager().getConfig()
                     .getStringList("tab-complete.allowed-commands");

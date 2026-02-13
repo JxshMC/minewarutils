@@ -5,8 +5,6 @@ import com.jxsh.misc.managers.TempOpManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.OfflinePlayer;
-import java.util.UUID;
 
 public class TempOpCommand extends BaseCommand {
 
@@ -30,28 +28,31 @@ public class TempOpCommand extends BaseCommand {
         }
 
         // Handle "remove" subcommand explicitly: /tempop remove <player>
-        if (args[0].equalsIgnoreCase("remove")) {
-            if (!plugin.hasPermission(player, "tempop-remove")) {
-                sender.sendMessage(plugin.parseText(
-                        plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), player));
-                return;
-            }
-            if (args.length < 2) {
-                sender.sendMessage(plugin.parseText("<red>Usage: /tempop remove <player>", player));
-                return;
-            }
-            handleRemove(player, args[1]);
+        // But plan says "delete /tempop remove. Replace all removal logic with a
+        // customizable /deop command."
+        // So we should remove this? The prompt says "Removal: Delete /tempop remove."
+        // Okay, I will remove strict handling here, but maybe keep it as legacy if user
+        // wants?
+        // No, strict plan: "Delete /tempop remove".
+        // Use /deop instead.
+
+        // Command: /op <player> [perm|time]
+        // If the user aliases /op to /tempop, then args[0] is player.
+
+        String targetName = args[0];
+        // Check if target is "remove" and warn? Or just treat "remove" as a player
+        // name?
+        if (targetName.equalsIgnoreCase("remove")) {
+            sender.sendMessage(plugin.parseText("<red>Use /deop <player> to remove OP.", player));
             return;
         }
 
-        // Handle Grant: /tempop <player> [perm|time]
         if (!plugin.hasPermission(player, "tempop-grant")) {
             sender.sendMessage(plugin.parseText(
                     plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), player));
             return;
         }
 
-        String targetName = args[0];
         Player target = Bukkit.getPlayer(targetName);
         if (target == null) {
             sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
@@ -64,21 +65,17 @@ public class TempOpCommand extends BaseCommand {
             return;
         }
 
-        if (target.isOp()) {
-            if (!tempOpManager.isTempOpp(target.getUniqueId())) {
-                String msg = plugin.getConfigManager().getMessages().getString("commands.op-manager.already-op")
-                        .replace("%target%", target.getName());
-                sender.sendMessage(plugin.parseText(msg, player));
-                return;
-            }
-        }
+        // Logic:
+        // 1. /op <player> (No args) -> Relog-Only (TEMP)
+        // 2. /op <player> <duration> -> Timed (TIME)
+        // 3. /op <player> perm -> PERM
 
-        TempOpManager.OpType type = TempOpManager.OpType.TEMP;
+        TempOpManager.OpType type = TempOpManager.OpType.TEMP; // Default relog-only
         long duration = 0;
 
         if (args.length > 1) {
             String arg1 = args[1].toLowerCase();
-            if (arg1.equals("perm")) {
+            if (arg1.equals("perm") || arg1.equals("permanent")) {
                 type = TempOpManager.OpType.PERM;
             } else {
                 type = TempOpManager.OpType.TIME;
@@ -86,58 +83,24 @@ public class TempOpCommand extends BaseCommand {
                     duration = parseDuration(arg1);
                 } catch (IllegalArgumentException e) {
                     sender.sendMessage(plugin
-                            .parseText("<red>Invalid duration format. Use seconds (e.g. 300) or 1h, 1d.", player));
+                            .parseText("<red>Invalid duration format. Example: 1d2h, 30m, 60s.", player));
                     return;
                 }
             }
         }
 
+        // Check if already OP
+        if (target.isOp()) {
+            // If they are vanilla OP (not in our system), or in our system.
+            // If in our system, we might want to overwrite?
+            // Prompt says: "If the Admin or the Target logs out, de-op the target
+            // immediately."
+            // So we just overwrite/update.
+            // If vanilla OP, we might be "downgrading" them to temp op.
+            // That's fine.
+        }
+
         tempOpManager.grantOp(player, target, type, duration);
-    }
-
-    private void handleRemove(Player sender, String targetName) {
-        Player target = Bukkit.getPlayer(targetName);
-        UUID targetUUID = null; // We need UUID. If offline, we might need to lookup or iterate activeOps?
-
-        // Try online
-        if (target != null) {
-            targetUUID = target.getUniqueId();
-        } else {
-            // Try looking up in activeOps by name? Not stored by name.
-            // Try offline player
-            OfflinePlayer off = Bukkit.getOfflinePlayer(targetName);
-            if (off.hasPlayedBefore() || off.isOp()) { // isOp check for offline perm ops?
-                targetUUID = off.getUniqueId();
-            }
-        }
-
-        if (targetUUID == null || !tempOpManager.isTempOpp(targetUUID)) {
-            // If they are vanilla OP but not in temp map, do we allow deop?
-            // Standard /deop works on vanilla ops.
-            // If this command REPLACES /deop logic, we should allow deopping vanilla ops
-            // too?
-            // User said: "alias for the /tempop remove that's /deop".
-            // Implies it should just run tempop remove logic.
-            // But if I deop a vanilla op using /deop, I expect it to work.
-            // Let's assume if not Key in map, but isOp, we just setOp(false).
-            OfflinePlayer off = Bukkit.getOfflinePlayer(targetName);
-            if (off.isOp()) {
-                off.setOp(false);
-                sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                        .getString("commands.tempop.revoke-sender", "<green>Op revoked from %target%.") // Reuse or
-                                                                                                        // generic
-                        .replace("%target%", targetName), sender));
-                return;
-            }
-
-            sender.sendMessage(plugin.parseText("<red>That player is not opped.", sender));
-            return;
-        }
-
-        tempOpManager.revokeOp(targetUUID);
-        sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                .getString("commands.tempop.revoke-sender", "<green>TempOp revoked from %target%.")
-                .replace("%target%", targetName), sender));
     }
 
     private long parseDuration(String input) {
@@ -146,45 +109,43 @@ public class TempOpCommand extends BaseCommand {
         }
 
         long totalSeconds = 0;
-        // Simple regex or iteration.
-        // Let's support simple single unit for now as specificed in prompt "1d", "1h".
-        // Regex for <number><unit>
-        if (input.matches("\\d+[smhd]")) {
-            long val = Long.parseLong(input.substring(0, input.length() - 1));
-            char unit = input.charAt(input.length() - 1);
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\d+)([wdhms])");
+        java.util.regex.Matcher m = p.matcher(input);
+
+        while (m.find()) {
+            long val = Long.parseLong(m.group(1));
+            String unit = m.group(2);
             switch (unit) {
-                case 's':
-                    totalSeconds = val;
+                case "w":
+                    totalSeconds += val * 7 * 86400;
                     break;
-                case 'm':
-                    totalSeconds = val * 60;
+                case "d":
+                    totalSeconds += val * 86400;
                     break;
-                case 'h':
-                    totalSeconds = val * 3600;
+                case "h":
+                    totalSeconds += val * 3600;
                     break;
-                case 'd':
-                    totalSeconds = val * 86400;
+                case "m":
+                    totalSeconds += val * 60;
+                    break;
+                case "s":
+                    totalSeconds += val;
                     break;
             }
-            return totalSeconds;
         }
-        throw new IllegalArgumentException("Invalid format");
+
+        if (totalSeconds == 0)
+            throw new IllegalArgumentException("Invalid format");
+        return totalSeconds;
     }
 
     @Override
     protected java.util.List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            // Suggest players + "remove"
-            java.util.List<String> list = getOnlinePlayerNames(sender);
-            list.add("remove");
-            return list;
+            return getOnlinePlayerNames(sender);
         }
         if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("remove")) {
-                return getOnlinePlayerNames(sender); // Players to remove
-            }
-            // Suggest types
-            return java.util.Arrays.asList("perm", "60", "300", "1h", "1d");
+            return java.util.Arrays.asList("perm", "1d", "12h", "30m");
         }
         return java.util.Collections.emptyList();
     }

@@ -407,6 +407,10 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         return luckPermsHook;
     }
 
+    public TempOpManager getTempOpManager() {
+        return tempOpManager;
+    }
+
     private void generateDefaults() {
         // Scan and generate permissions
         java.util.List<String> cmdKeys = java.util.Arrays.asList(

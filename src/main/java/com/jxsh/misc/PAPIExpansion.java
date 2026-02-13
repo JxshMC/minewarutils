@@ -107,6 +107,52 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return (suffix.isEmpty() ? "" : suffix) + username;
         }
 
+        if (params.equals("tempop_time_left")) {
+            com.jxsh.misc.managers.TempOpManager tempOpManager = plugin.getTempOpManager();
+            if (tempOpManager == null)
+                return "";
+
+            com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
+            if (data == null)
+                return "";
+
+            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
+                long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
+                if (remaining < 0)
+                    remaining = 0;
+
+                // Dynamic Formatting: Hide units that are 0.
+                // We need a helper for this.
+                return formatDurationDynamic(remaining);
+            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+                return "Permanent";
+            } else {
+                return "Relog";
+            }
+        }
+
         return null;
+    }
+
+    private String formatDurationDynamic(long totalSeconds) {
+        if (totalSeconds <= 0)
+            return "Expired";
+
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0)
+            sb.append(days).append("d ");
+        if (hours > 0)
+            sb.append(hours).append("h ");
+        if (minutes > 0)
+            sb.append(minutes).append("m ");
+        if (seconds > 0 || sb.length() == 0)
+            sb.append(seconds).append("s");
+
+        return sb.toString().trim();
     }
 }
