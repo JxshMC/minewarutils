@@ -131,21 +131,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         this.helpManager = new com.jxsh.misc.managers.HelpManager(this);
         this.helpManager.load();
 
-        // 2. Register HelpCommand EARLY (Fixes NPE)
-        if (configManager.getConfig().getBoolean("help-system.enabled", true)) {
-            try {
-                java.lang.reflect.Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-                commandMapField.setAccessible(true);
-                org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap) commandMapField
-                        .get(Bukkit.getServer());
-
-                com.jxsh.misc.commands.HelpCommand helpCmd = new com.jxsh.misc.commands.HelpCommand(this);
-                commandMap.register("minewarutils", helpCmd);
-            } catch (Exception e) {
-                getLogger().severe("Failed to register HelpCommand to CommandMap!");
-                e.printStackTrace();
-            }
-        }
+        // HelpCommand is now registered via CommandManager in registerCommands()
 
         // 3. Initialize Managers & Listeners
         scoreboardManager = new ScoreboardManager(this);
@@ -286,6 +272,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     private void registerCommands() {
         // Register Executors (Internal Key -> Executor)
         commandManager.addExecutor("minewarutils", new MinewarUtilsCommand(this));
+        commandManager.addExecutor("help", new com.jxsh.misc.commands.HelpCommand(this));
 
         commandManager.addExecutor("top", new TopCommand(this));
         commandManager.addExecutor("bottom", new BottomCommand(this));

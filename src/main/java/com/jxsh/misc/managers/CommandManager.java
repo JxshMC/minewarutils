@@ -160,6 +160,9 @@ public class CommandManager {
             constructor.setAccessible(true);
             PluginCommand dynamicCmd = constructor.newInstance(name, plugin);
 
+            // FORCE UNREGISTER any existing command (Vanilla or other plugin)
+            unregisterFromMap(name);
+
             dynamicCmd.setExecutor(executor);
             dynamicCmd.setTabCompleter(executor);
             if (permNode != null) {

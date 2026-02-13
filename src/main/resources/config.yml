@@ -4,6 +4,7 @@ config-version: !!int "3"
 # Feature Toggles (Enable/Disable command groups)
 # CRITICAL: Disabling a group will UNREGISTER those commands mostly.
 features:
+  help: true
   top-bottom: true # /top, /bottom
   gamemode: true # /gamemode, /gmc, /gms, /gma, /gmsp
   cosmetics: true # /poopgun, /devarmor
@@ -250,6 +251,10 @@ aliases:
   deop:
     command: "/deop"
     aliases: []
+  help:
+    command: "/help"
+    aliases: 
+    - "?"
 
 # Sneak Effect Settings
 # The players enabled for sneak effects

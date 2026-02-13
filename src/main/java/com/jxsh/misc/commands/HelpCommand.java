@@ -2,35 +2,18 @@ package com.jxsh.misc.commands;
 
 import com.jxsh.misc.JxshMisc;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.defaults.BukkitCommand;
 
-import java.util.Arrays;
-
-public class HelpCommand extends BukkitCommand {
-
-    private final JxshMisc plugin;
+public class HelpCommand extends BaseCommand {
 
     public HelpCommand(JxshMisc plugin) {
-        super("help");
-        this.plugin = plugin;
-        this.setDescription("Shows the help menu");
-        this.setUsage("/help [page]");
-        this.setAliases(Arrays.asList("?"));
-        this.setPermission("minewar.help");
+        super(plugin, "help", false);
     }
 
     @Override
-    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-        if (plugin.getConfigManager() == null || plugin.getConfigManager().getConfig() == null) {
-            sender.sendMessage("§cPlugin is still loading. Please wait...");
-            return true;
-        }
-
+    public void execute(CommandSender sender, String[] args) {
         if (!plugin.getConfigManager().getConfig().getBoolean("help-system.enabled", true)) {
-            // If disabled via config but command is still registered (shouldn't happen if
-            // logic is correct),
-            // or if we want soft disable.
-            return true;
+            // Respect legacy setting if present
+            return;
         }
 
         int page = 1;
@@ -42,6 +25,5 @@ public class HelpCommand extends BukkitCommand {
         }
 
         plugin.getHelpManager().showHelp(sender, page);
-        return true;
     }
 }
