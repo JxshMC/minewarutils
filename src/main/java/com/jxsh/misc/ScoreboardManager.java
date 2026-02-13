@@ -281,11 +281,14 @@ public class ScoreboardManager implements Listener {
                     if (resolved == null)
                         resolved = "";
 
-                    // Logic: If resolved is empty "", check for rule ""
-                    if (resolved.isEmpty() && rules.containsKey("")) {
+                    // Logic: Strip colors before checking for empty/rules
+                    String stripped = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', resolved));
+
+                    // If resolved is visually empty "", check for rule ""
+                    if (stripped.isEmpty() && rules.containsKey("")) {
                         result = result.replace(papiKey, rules.get(""));
-                    } else if (rules.containsKey(resolved)) {
-                        result = result.replace(papiKey, rules.get(resolved));
+                    } else if (rules.containsKey(stripped)) {
+                        result = result.replace(papiKey, rules.get(stripped));
                     } else {
                         // Default logic: just replace with resolved value
                         result = result.replace(papiKey, resolved);
@@ -326,11 +329,6 @@ public class ScoreboardManager implements Listener {
         // Check 3: Kill Switch
         // If we reached here, it's neither Relog nor Active Time -> likely "Permanent"
         // or empty or "No Op"
-        // But wait, if it's "Permanent", that logic might differ.
-        // For now, if config map has "Permanent", use it, else if it's not a time
-        // format we know, kill it.
-        // Actually, let's just kill it if it doesn't match active time strings, as per
-        // V10 spec for hiding lines.
         return null;
     }
 
@@ -358,8 +356,10 @@ public class ScoreboardManager implements Listener {
         }
         String clean = text.replace("{centre}", "");
 
-        // Calculate visible length
-        String plain = PlainTextComponentSerializer.plainText().serialize(MiniMessage.miniMessage().deserialize(clean));
+        // Calculate visible length safely using MiniMessage stripTags
+        // This removes ALL tags (<red>, <bold>, etc.) to get raw character count
+        String plain = MiniMessage.miniMessage().stripTags(clean);
+
         int visibleLength = plain.length();
         int padding = (30 - visibleLength) / 2;
 
@@ -384,12 +384,7 @@ public class ScoreboardManager implements Listener {
             team = sb.registerNewTeam(teamName);
             String entry = "§" + Integer.toHexString(score); // Unique entry 0-F
             if (score > 15)
-                // Unique coding for >15 if needed, but sidebar max is 15 usually
                 entry = "§" + score;
-
-            // Ensure entry is unique and valid color code sequence to be invisible if
-            // needed
-            // But simple hex string is fine for now
 
             team.addEntry(entry);
             obj.getScore(entry).setScore(score);

@@ -100,48 +100,14 @@ public class TempOpManager {
                 giverUUID.toString(),
                 expiration);
 
-        // Messages
-        String giverName = giver.getName();
-        String receiverName = receiver.getName();
-
-        if (type == OpType.TEMP) {
-            // Session Op Messages
-            receiver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.op-manager.grant")
-                    .replace("%target%", giverName), receiver));
-
-            giver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.op-manager.grant-sender")
-                    .replace("%target%", receiverName), giver));
-        } else {
-            // Time/Perm Op Messages
-            String timeStr = (type == OpType.PERM) ? "Permanent" : formatDuration(durationSeconds);
-
-            receiver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.tempop.granted-target")
-                    .replace("%time%", timeStr), receiver));
-
-            giver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.tempop.granted")
-                    .replace("%target%", receiverName)
-                    .replace("%time%", timeStr), giver));
-        }
+        // Messages should be handled by the Command class that calls this manager.
+        // We keep the manager logic pure.
     }
 
-    private String formatDuration(long seconds) {
-        if (seconds >= 86400)
-            return (seconds / 86400) + "d";
-        if (seconds >= 3600)
-            return (seconds / 3600) + "h";
-        if (seconds >= 60)
-            return (seconds / 60) + "m";
-        return seconds + "s";
-    }
-
+    // We need to know who revoked it, or why?
+    // Logic might need to be shifted if we want "sponsor-left" message.
+    // Overloading this or handling it in caller is better.
     public void revokeOp(UUID receiverUUID) {
-        // We need to know who revoked it, or why?
-        // Logic might need to be shifted if we want "sponsor-left" message.
-        // Overloading this or handling it in caller is better.
         revokeOp(receiverUUID, null);
     }
 

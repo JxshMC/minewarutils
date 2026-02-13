@@ -23,9 +23,8 @@ public class KitCommand extends BaseCommand {
         Player player = (Player) sender;
         Player target = player;
 
-        if (args.length < 1) {
-            sender.sendMessage(
-                    plugin.parseText(plugin.getConfigManager().getMessages().getString("commands.kit.usage"), player));
+        if (args.length < 1 || args[0].equalsIgnoreCase("list")) {
+            listKits(player);
             return;
         }
 

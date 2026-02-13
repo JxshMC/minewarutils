@@ -24,6 +24,7 @@ dependencies {
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.9.2")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.9.2")
     implementation("dev.dejvokep:boosted-yaml:1.3.7")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 }
 
 tasks.shadowJar {
