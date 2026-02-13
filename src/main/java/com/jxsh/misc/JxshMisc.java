@@ -402,25 +402,47 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     private void generateDefaults() {
         // Scan and generate permissions
+        // Updated list to include all permissions removed from plugin.yml and new core
+        // structural nodes
         java.util.List<String> cmdKeys = java.util.Arrays.asList(
-                "minewarutils", "reload", "sneak", "sneak.others", "world-flags", "help",
-                "mutechat", "slowchat", "clearchat", "mentiontoggle", "mentions",
-                "mutechat-bypass", "slowchat-bypass", "clearchat-bypass",
-                "top", "top.others", "bottom", "bottom.others",
-                "heal", "heal.others", "eat", "eat.others",
-                "fly", "fly.others", "flyspeed", "flyspeed.others",
-                "gamemode", "gamemode.others", "gmc", "gmc.others", "gms", "gms.others", "gma", "gma.others", "gmsp",
-                "gmsp.others",
-                "inventorysee", "inventorysee.others", "clearinventory", "clearinventory.others",
-                "give", "give.others", "head", "head.others",
+                // Core
+                "minewarutils", "reload", "help",
+                // Features
+                "sneak", "sneak.others",
+                "world-flags",
+                // Chat
+                "mutechat", "mutechat.toggle", "mutechat-bypass",
+                "slowchat", "slowchat.set", "slowchat-bypass",
+                "clearchat", "clearchat-bypass",
+                "mentiontoggle", "mentions",
+                // Teleportation & Movement
+                "top", "top.others",
+                "bottom", "bottom.others",
+                "fly", "fly.others",
+                "flyspeed", "flyspeed.others",
                 "setspawn", "spawn", "spawn.others",
-                "buildmode", "buildmode-others", "bmadmin", "bmreset", "bmreset.others", "buildmode-bypass",
-                "poopgun", "poopgun.others", "devarmour", "devarmour.others",
-                "setwarp", "warp", "warp.others", "deletewarp", "editwarp",
+                "setwarp", "warp", "warp.others", "deletewarp", "editwarp", "warps",
+                // Player Management
+                "heal", "heal.others",
+                "eat", "eat.others",
+                "gamemode", "gamemode.others",
+                "gmc", "gmc.others", "gms", "gms.others", "gma", "gma.others", "gmsp", "gmsp.others",
+                "inventorysee", "inventorysee.others",
+                "clearinventory", "clearinventory.others",
+                "give", "give.others",
+                "head", "head.others",
                 "itemname", "lore",
+                // Build Mode
+                "buildmode", "buildmode-others", "bmadmin", "bmreset", "bmreset.others", "buildmode-bypass",
+                // Kits
+                "createkit", "kit", "kit.others", "deletekit", "editkit", "kits",
+                // Fun & Admin
+                "poopgun", "poopgun.others",
+                "devarmour", "devarmour.others",
                 "forcefield", "forcefield.others", "forcefield-others",
-                "createkit", "kit", "kit.others", "deletekit", "editkit",
-                "tempop", "tempop-grant", "tempop-remove", "ops");
+                // OP Manager - NEW NODES
+                "tempop", "tempop-grant", "tempop-remove", "ops",
+                "op.temporary", "op.permanent", "op.deop");
         configManager.generatePermissions(cmdKeys);
 
         // Generate default messages
@@ -605,11 +627,14 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     public void loadConfigValues() {
         dev.dejvokep.boostedyaml.YamlDocument config = configManager.getConfig();
-        enabledUsers = config.getStringList("enabled-users");
+        // New structure: simple list
+        enabledUsers = config.getStringList("enabled-users"); // No change, key exists in v9
         if (enabledUsers == null) {
             enabledUsers = new ArrayList<>();
         }
 
+        // drop-item keys moved to root in v9 (same as before effectively for this
+        // method, but validation)
         String materialName = config.getString("drop-item-type", "DIAMOND");
         if (materialName.equalsIgnoreCase("NONE") || materialName.equalsIgnoreCase("AIR")) {
             dropItemType = Material.AIR;
@@ -623,9 +648,9 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         }
 
         dropItemName = config.getString("drop-item-name", "");
-        dropItemEnabled = config.getBoolean("drop-item-enabled", true);
+        dropItemEnabled = config.getBoolean("drop-item-enabled", false); // Default false in v9
 
-        dropDurationSeconds = config.getInt("drop-duration-seconds", 3);
+        dropDurationSeconds = config.getInt("drop-duration-seconds", 5);
 
         String particleName = config.getString("particle-type", "HEART");
         try {
@@ -635,7 +660,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
             particleType = Particle.HEART;
         }
 
-        particleCount = config.getInt("particle-count", 10);
+        particleCount = config.getInt("particle-count", 1);
         particleDurationSeconds = config.getInt("particle-duration-seconds", 1);
 
         onCrouchMessage = configManager.getMessages().getString("on-crouch", "");

@@ -169,6 +169,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (!checkSetting(event.getPlayer().getWorld(), "destroy", true)) {
             if (!event.getPlayer().hasPermission("minewar.bypass.world")) {
                 event.setCancelled(true);
@@ -178,6 +180,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (!checkSetting(event.getPlayer().getWorld(), "place", true)) {
             if (!event.getPlayer().hasPermission("minewar.bypass.world")) {
                 event.setCancelled(true);
@@ -187,6 +191,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onPvP(EntityDamageByEntityEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
             if (!checkSetting(event.getEntity().getWorld(), "pvp", true)) {
                 event.setCancelled(true);
@@ -196,6 +202,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (event.getEntity() instanceof Player) {
             if (checkSetting(event.getEntity().getWorld(), "invincible", false)) {
                 event.setCancelled(true);
@@ -205,6 +213,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onHunger(FoodLevelChangeEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (event.getEntity() instanceof Player) {
             if (checkSetting(event.getEntity().getWorld(), "invincible", false)) {
                 event.setCancelled(true);
@@ -215,6 +225,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         World world = event.getLocation().getWorld();
 
         // NoMobs Check (Highest Priority - if true, cancel ALL)
@@ -233,6 +245,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         Player player = event.getPlayer();
         World world = player.getWorld();
 
@@ -254,6 +268,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onLeafDecay(org.bukkit.event.block.LeavesDecayEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (checkSetting(event.getBlock().getWorld(), "blockdecay", false)) {
             event.setCancelled(true);
         }
@@ -261,6 +277,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onBlockFade(org.bukkit.event.block.BlockFadeEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (checkSetting(event.getBlock().getWorld(), "blockdecay", false)) {
             event.setCancelled(true);
         }
@@ -268,6 +286,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onBlockBurn(org.bukkit.event.block.BlockBurnEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (checkSetting(event.getBlock().getWorld(), "blockdecay", false)) {
             event.setCancelled(true);
         }
@@ -275,6 +295,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onBlockSpread(org.bukkit.event.block.BlockSpreadEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (checkSetting(event.getBlock().getWorld(), "blockdecay", false)) {
             event.setCancelled(true);
         }
@@ -282,6 +304,8 @@ public class WorldManager implements Listener {
 
     @EventHandler
     public void onBlockForm(org.bukkit.event.block.BlockFormEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("world-flags"))
+            return;
         if (checkSetting(event.getBlock().getWorld(), "blockdecay", false)) {
             event.setCancelled(true);
         }

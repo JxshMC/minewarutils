@@ -1,4 +1,231 @@
-config-version: !!int "3"
+#Jxsh-Core v1.0 made for minewar 
+config-version: 9
+
+features:
+  help: true
+  top-bottom: true
+  gamemode: true
+  cosmetics: true
+  warps: false
+  kits: false
+  per-kit-permission: false
+  op-manager: true
+  join-spawn: true
+  chat: true
+  mentions: true
+  MOTD: false
+  help-system: true
+  block-tab-complete: true
+  command-aliases: true
+  world-flags: true
+  join-commands: true
+  join-messages: false
+  custom-join-messages: false
+  heal: true
+  eat: true
+  fly: true
+  flyspeed: true
+  inventorysee: true
+  clearinventory: true
+  give: true
+  head: true
+  setspawn: true
+  spawn: true
+  itemname: true
+  lore: true
+  buildmode: true
+
+utility:
+  tab-complete:
+    allowed-commands: [spawn, buildmode, bm, coinflip, cf, fly, minewarutils, mu, help]
+  chat:
+    clickable-links: true
+    link-format: <yellow>%link%
+    format: <white>%luckperms_prefix%<gray>%player% <dark_gray>»</dark_gray> <#ccffff>%message%
+  aliases:
+    minewarutils:
+      command: "/minewarutils"
+      aliases:
+      - "mu"
+      - "mwu"
+      sub-commands:
+        reload:
+          command: "reload"
+          aliases:
+          - "rl"
+        sneak:
+          command: "sneak"
+          aliases:
+          - "s"
+        world:
+          command: "world"
+          aliases:
+          - "w"
+        help:
+          command: "help"
+          aliases:
+          - "?"
+    mutechat:
+      command: "/mutechat"
+      aliases:
+      - mc
+    slowchat:
+      command: "/slowchat"
+      aliases:
+      - slc
+    clearchat:
+      command: "/clearchat"
+      aliases:
+      - "cc"
+    top:
+      command: "/top"
+      aliases: []
+    bottom:
+      command: "/bottom"
+      aliases: []
+    heal:
+      command: "/heal"
+      aliases: []
+    eat:
+      command: "/feed"
+      aliases:
+      - "eat"
+    fly:
+      command: "/fly"
+      aliases:
+      - "flight"
+    flyspeed:
+      command: "/flyspeed"
+      aliases:
+      - "speed"
+    gamemode:
+      command: "/gamemode"
+      aliases:
+      - "gm"
+    gmc:
+      command: "/gmc"
+      aliases: 
+      - "creative"
+    gms:
+      command: "/gms"
+      aliases: 
+      - "survival"
+    gma:
+      command: "/gma"
+      aliases: 
+      - "adventure"
+    gmsp:
+      command: "/gmsp"
+      aliases: 
+      - "spectator"
+    inventorysee:
+      command: "/inventorysee"
+      aliases:
+      - "invsee"
+    clearinventory:
+      command: "/clearinventory"
+      aliases:
+      - "ci"
+      - "clear"
+    give:
+      command: "/give"
+      aliases:
+      - "i"
+    head:
+      command: "/head"
+      aliases:
+      - "skull"
+      - "playerhead"
+      - "gethead"
+    setspawn:
+      command: "/setspawn"
+      aliases: 
+      - "setjoin"
+      - "setjoinloc"
+    spawn:
+      command: "/spawn"
+      aliases: []
+    buildmode:
+      command: "/buildmode"
+      aliases:
+      - "bm"
+    bmadmin:
+      command: "/bmadmin"
+      aliases:
+      - "bma"
+    bmreset:
+      command: "/bmreset"
+      aliases:
+      - "bmr"
+    poopgun:
+      command: "/poopgun"
+      aliases:
+      - "pg"
+    devarmour:
+      command: "/devarmour"
+      aliases: []
+    setwarp:
+      command: "/setwarp"
+      aliases:
+      - "createwarp"
+      - "addwarp"
+    warp:
+      command: "/warp"
+      aliases: []
+    warps:
+      command: "/warps"
+      aliases: []
+    deletewarp:
+      command: "/deletewarp"
+      aliases:
+      - "delwarp"
+      - "removewarp"
+    editwarp:
+      command: "/editwarp"
+      aliases: 
+      - "ewarp"
+      - "edwarp"
+    itemname:
+      command: "/itemname"
+      aliases:
+      - "rename"
+    lore:
+      command: "/lore"
+      aliases: []
+    forcefield:
+      command: "/forcefield"
+      aliases:
+      - "ff"
+    createkit:
+      command: "/createkit"
+      aliases: []
+    kit:
+      command: "/kit"
+      aliases: []
+    deletekit:
+      command: "/deletekit"
+      aliases: []
+    editkit:
+      command: "/editkit"
+      aliases: []
+    kits:
+      command: "/kits"
+      aliases: []
+    tempop:
+      command: "/tempop"
+      aliases: 
+      - "op"
+    ops:
+      command: "/ops"
+      aliases: []
+    deop:
+      command: "/deop"
+      aliases: []
+    help:
+      command: "/help"
+      aliases: 
+      - "?"
+
 #Jxsh-Core v1
 
 # Feature Toggles (Enable/Disable command groups)

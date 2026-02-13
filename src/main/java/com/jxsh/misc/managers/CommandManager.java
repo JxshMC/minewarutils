@@ -34,11 +34,18 @@ public class CommandManager {
     }
 
     public void registerAllConfiguredCommands() {
-        // 1. Get "aliases" section from config
+        // 1. Get "utility.aliases" section from config
         dev.dejvokep.boostedyaml.block.implementation.Section aliasesSection = plugin.getConfigManager().getConfig()
-                .getSection("aliases");
+                .getSection("utility.aliases");
         if (aliasesSection == null) {
-            plugin.getLogger().warning("No 'aliases' section found in config.yml! No commands will be registered.");
+            // Fallback to "aliases" for backward compatibility if utility.aliases missing
+            // (though config version 9 strictly uses utility.aliases)
+            aliasesSection = plugin.getConfigManager().getConfig().getSection("aliases");
+        }
+
+        if (aliasesSection == null) {
+            plugin.getLogger()
+                    .warning("No 'utility.aliases' section found in config.yml! No commands will be registered.");
             return;
         }
 

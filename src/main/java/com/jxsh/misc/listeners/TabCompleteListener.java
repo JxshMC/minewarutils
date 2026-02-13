@@ -25,6 +25,11 @@ public class TabCompleteListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onTabComplete(AsyncTabCompleteEvent event) {
+        // Feature Toggle Check (v9 config: features.block-tab-complete)
+        if (!plugin.getConfigManager().isFeatureEnabled("block-tab-complete")) {
+            return;
+        }
+
         // 1. Allow console and players with bypass permission
         if (event.getSender().hasPermission("minewar.tabcomplete.bypass")) {
             return;
@@ -34,7 +39,11 @@ public class TabCompleteListener implements Listener {
         // Then add ONLY the allowed commands from config.
 
         List<String> allowedCommands = plugin.getConfigManager().getConfig()
-                .getStringList("tab-complete.allowed-commands");
+                .getStringList("utility.tab-complete.allowed-commands");
+        if (allowedCommands == null || allowedCommands.isEmpty()) {
+            // Fallback
+            allowedCommands = plugin.getConfigManager().getConfig().getStringList("tab-complete.allowed-commands");
+        }
         if (allowedCommands == null) {
             allowedCommands = Collections.emptyList();
         }
@@ -154,10 +163,17 @@ public class TabCompleteListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCommandSend(PlayerCommandSendEvent event) {
+        if (!plugin.getConfigManager().isFeatureEnabled("block-tab-complete")) {
+            return;
+        }
+
         if (!event.getPlayer().hasPermission("minewar.tabcomplete.bypass")) {
             // Get list of allowed commands from config
             List<String> allowedCommands = plugin.getConfigManager().getConfig()
-                    .getStringList("tab-complete.allowed-commands");
+                    .getStringList("utility.tab-complete.allowed-commands");
+            if (allowedCommands == null || allowedCommands.isEmpty()) {
+                allowedCommands = plugin.getConfigManager().getConfig().getStringList("tab-complete.allowed-commands");
+            }
             if (allowedCommands == null)
                 allowedCommands = Collections.emptyList();
 
