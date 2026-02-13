@@ -1,4 +1,4 @@
-config-version: 4
+config-version: 6
 
 # Command output message
 minewarutils-header: <gradient:#ccffff:#0adef7><b>Minewar-Utils<reset><yellow> [1.0] <gray>Developed by <red>Jxsh <gray>& <red>Jzsh

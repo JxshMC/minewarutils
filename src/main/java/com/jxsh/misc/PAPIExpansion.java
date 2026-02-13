@@ -114,21 +114,29 @@ public class PAPIExpansion extends PlaceholderExpansion {
 
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
 
-            // STRICT RULE: Type: Not Op -> Return commands.tempop.no-time
-            // Even if Vanilla OP, if they are not in TempOpManager, they get "no-time".
+            // Strict Priority Logic
+
+            // Priority 4 (Fallback/Not Op in our system)
             if (data == null) {
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
             }
 
+            // Priority 1 (Permanent)
             if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
-                // Type: Permanent -> Return commands.tempop.time-left-perm
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm", "Permanent");
-            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP) {
-                // Type: Session-Based -> Return commands.tempop.time-left-temp
+            }
+
+            // Priority 2 (Session/Relog)
+            // Defined as OpType.TEMP or OpType.TIME with 0 expiration (sanity check, though
+            // TIME should have expiration)
+            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP
+                    || (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME && data.expiration == 0)) {
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp",
                         "Expire-Relog");
-            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
-                // Type: Timed -> Calculate and format
+            }
+
+            // Priority 3 (Timed)
+            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
                 long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
                 if (remaining < 0)
                     remaining = 0;
@@ -137,7 +145,8 @@ public class PAPIExpansion extends PlaceholderExpansion {
                         "%days%d, %hours%h, %minutes%m, %seconds%s");
                 return formatDurationConfigurable(remaining, format);
             }
-            return "";
+
+            return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
         }
 
         return null;
