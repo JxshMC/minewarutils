@@ -21,6 +21,11 @@ public class HelpCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+        if (plugin.getConfigManager() == null || plugin.getConfigManager().getConfig() == null) {
+            sender.sendMessage("§cPlugin is still loading. Please wait...");
+            return true;
+        }
+
         if (!plugin.getConfigManager().getConfig().getBoolean("help-system.enabled", true)) {
             // If disabled via config but command is still registered (shouldn't happen if
             // logic is correct),

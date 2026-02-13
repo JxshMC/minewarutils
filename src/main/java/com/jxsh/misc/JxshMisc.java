@@ -127,6 +127,10 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         loadConfigValues();
 
+        // 1b. Initialize HelpManager EARLY (Used by HelpCommand)
+        this.helpManager = new com.jxsh.misc.managers.HelpManager(this);
+        this.helpManager.load();
+
         // 2. Register HelpCommand EARLY (Fixes NPE)
         if (configManager.getConfig().getBoolean("help-system.enabled", true)) {
             try {
@@ -187,8 +191,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         this.tempOpManager = new TempOpManager(this);
         this.forcefieldManager = new ForcefieldManager(this);
         this.devManager = new com.jxsh.misc.managers.DevManager(this);
-        this.helpManager = new com.jxsh.misc.managers.HelpManager(this);
-        this.helpManager.load();
+        // helpManager initialized early above
 
         this.buildModeManager = new com.jxsh.misc.managers.BuildModeManager(this);
 

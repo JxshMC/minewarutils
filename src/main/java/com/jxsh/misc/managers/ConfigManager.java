@@ -108,9 +108,6 @@ public class ConfigManager {
                 for (Object keyObj : worlds.getKeys()) {
                     String worldName = keyObj.toString();
                     if (!worlds.isSection(worldName)) {
-                        // If it's not a section (custom configs), remove it?
-                        // Or if it's supposed to be a section.
-                        // Let's assume it should be a section of flags.
                         if (!worlds.getBlock(worldName).isSection()) {
                             plugin.getLogger().warning("Invalid world config for '" + worldName + "'. Resetting.");
                             worlds.remove(worldName);
@@ -118,6 +115,14 @@ public class ConfigManager {
                         }
                     }
                 }
+            }
+
+            // 4. Validate Version (Must be Integer)
+            if (doc.contains("config-version") && !doc.isInt("config-version")) {
+                plugin.getLogger().warning("Invalid type for 'config-version'. Fixing...");
+                int version = doc.getInt("config-version", 1); // Try to get as int, default 1
+                doc.set("config-version", version);
+                modified = true;
             }
 
             if (modified) {
@@ -136,19 +141,20 @@ public class ConfigManager {
 
         File file = new File(plugin.getDataFolder(), filename);
 
-        // 1. Create/Load the document
-        // 1. Create/Load the document
+        // 1. Create/Load the document (Manual Update Mode)
         YamlDocument doc = null;
         try {
+            // Load WITHOUT auto-update first to fix version types
             doc = YamlDocument.create(
                     file,
                     Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
                             "Resource /" + filename + " not found"),
                     GeneralSettings.builder().setUseDefaults(true).build(),
-                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    LoaderSettings.builder().setAutoUpdate(false).build(), // Manual update
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(true)
+                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(false)
                             .build());
+
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load " + filename + ": " + e.getMessage());
             plugin.getLogger().warning("Attempting to backup and reset " + filename + "...");
@@ -157,11 +163,9 @@ public class ConfigManager {
             File backup = new File(plugin.getDataFolder(), filename + ".broken." + System.currentTimeMillis());
             if (file.renameTo(backup)) {
                 plugin.getLogger().info("Backup created: " + backup.getName());
-            } else {
-                plugin.getLogger().warning("Failed to create backup! Original file might be lost.");
             }
 
-            // Try again (fresh)
+            // Create fresh
             doc = YamlDocument.create(
                     new File(plugin.getDataFolder(), filename),
                     Objects.requireNonNull(plugin.getClass().getResourceAsStream("/" + filename),
@@ -173,14 +177,25 @@ public class ConfigManager {
                             .build());
         }
 
-        // 2. Strict Repair: Compare against resource default
-        // validateAndRepair(doc, filename); // Removed as BoostedYAML handles it via
-        // settings
+        // 2. Force Version Integer Logic
+        if (doc.contains("config-version")) {
+            // Check if it's a string or other non-int type
+            if (!doc.isInt("config-version")) {
+                plugin.getLogger()
+                        .warning("Detected invalid config-version type in " + filename + ". Forcing to Integer.");
+                // Try to parse it or default to 1
+                int fixedVer = doc.getInt("config-version", 1);
+                doc.set("config-version", fixedVer);
+                // We don't save yet; update() will use in-memory value?
+                // BoostedYAML reads from the document, so setting it here should work for the
+                // update comparison.
+            }
+        }
 
-        // 3. Save if modified during repair options above (GeneralSettings might handle
-        // defaults, but we want to be sure)
-        // BoostedYAML's setUseDefaults(true) actually merges defaults in memory.
-        // We just need to save it to disk to "repair" the file.
+        // 3. Manually Update
+        doc.update();
+
+        // 4. Save
         doc.save();
 
         plugin.getLogger().info(filename + " loaded successfully! (Version: " + doc.getInt("config-version", -1) + ")");

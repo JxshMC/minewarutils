@@ -21,9 +21,15 @@ public class TempOpCommand extends BaseCommand {
     public void execute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
 
+        if (plugin.getConfigManager() == null || plugin.getConfigManager().getMessages() == null) {
+            sender.sendMessage("§cPlugin loading... please wait.");
+            return;
+        }
+
         if (args.length < 1) {
-            sender.sendMessage(plugin
-                    .parseText(plugin.getConfigManager().getMessages().getString("commands.tempop.usage"), player));
+            String msg = plugin.getConfigManager().getMessages().getString("commands.tempop.usage",
+                    "§cUsage: /tempop <player> [duration]");
+            sender.sendMessage(plugin.parseText(msg, player));
             return;
         }
 
@@ -48,15 +54,17 @@ public class TempOpCommand extends BaseCommand {
         }
 
         if (!plugin.hasPermission(player, "tempop-grant")) {
-            sender.sendMessage(plugin.parseText(
-                    plugin.getConfigManager().getMessages().getString("commands.error.no-permission"), player));
+            String msg = plugin.getConfigManager().getMessages().getString("commands.error.no-permission",
+                    "§cNo permission.");
+            sender.sendMessage(plugin.parseText(msg, player));
             return;
         }
 
         Player target = Bukkit.getPlayer(targetName);
         if (target == null) {
-            sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.error.invalid-player").replace("%target%", targetName), player));
+            String msg = plugin.getConfigManager().getMessages().getString("commands.error.invalid-player",
+                    "§cPlayer not found.");
+            sender.sendMessage(plugin.parseText(msg.replace("%target%", targetName), player));
             return;
         }
 
