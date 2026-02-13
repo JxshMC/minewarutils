@@ -35,11 +35,6 @@ public class DatabaseManager {
             config.setPassword(password);
         } else {
             // Default H2
-            // Use DB_CLOSE_DELAY=0 to ensure it closes immediately when the last connection
-            // is
-            // closed.
-            // Use AUTO_SERVER=TRUE to allow mixed mode (though less relevant with
-            // CLOSE_DELAY=0, it's safer for reloads).
             config.setJdbcUrl(
                     "jdbc:h2:./plugins/MinewarUtils/Database/minewarutils;MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=0");
             config.setDriverClassName("org.h2.Driver");
@@ -54,7 +49,7 @@ public class DatabaseManager {
                 plugin.getConfigManager().getConfig().getInt("storage.pool-settings.connection-timeout", 5000));
 
         // Retry logic for H2 file locks during reloads
-        int attempts = 5; // Increased to 5
+        int attempts = 6; // Increased to 6 with faster intervals
         for (int i = 0; i < attempts; i++) {
             try {
                 dataSource = new HikariDataSource(config);
@@ -69,17 +64,15 @@ public class DatabaseManager {
                 if (i == attempts - 1) {
                     plugin.getLogger().severe("Failed to connect to database after " + attempts + " attempts!");
                     e.printStackTrace();
-                    // Fallback or disable?
-                    // If we return, dataSource is null/invalid.
                     return;
                 } else {
-                    plugin.getLogger().warning("Database lock detected, retrying in 2 seconds... (Attempt " + (i + 1)
+                    plugin.getLogger().warning("Database lock detected, retrying in 500ms... (Attempt " + (i + 1)
                             + "/" + attempts + ")");
                     if (dataSource != null && !dataSource.isClosed()) {
                         dataSource.close();
                     }
                     try {
-                        Thread.sleep(2000); // Increased to 2 seconds
+                        Thread.sleep(500); // reduced to 500ms
                     } catch (InterruptedException ignored) {
                     }
                 }
