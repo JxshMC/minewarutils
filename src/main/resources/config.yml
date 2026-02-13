@@ -1,201 +1,300 @@
-# ==========================================
-#        MINEWAR UTILS - CONFIGURATION
-# ==========================================
-# Valid versions: 10
-config-version: 10
+#Jxsh-Core v1.0 made for minewar 
+config-version: 10 # DO NOT MODIFY
 
-# ==========================================
-#              STORAGE SETTINGS
-# ==========================================
-storage:
-  # Type: H2 or MARIADB
-  type: H2
-  
-  # MariaDB Settings (Only used if type is MARIADB)
-  host: "localhost"
-  port: 3306
-  database: "minewar_utils"
-  username: "root"
-  password: "password"
-  
-  # Connection Pool Settings
-  max-pool-size: 10
-  min-idle: 2
-  max-lifetime: 1800000 # 30 minutes
-  connection-timeout: 30000 # 30 seconds
-
-# ==========================================
-#              FEATURE TOGGLES
-# ==========================================
 features:
-  chat-formatting: true
-  tab-list: true
-  join-leave-messages: true
-  custom-motd: true
-  admin-chat: true
-  staff-chat: true
-  item-blacklist: true
-  world-flags: true
-  void-generator: true
-  anti-popup: true
-  scoreboard: true
-  auto-announcer: true
-  warps: true
-  kits: true
-  build-mode: true
-  temp-op: true
-  dev-armor: true
-  poop-gun: true
-  custom-commands: true
+  help: true
+  top-bottom: true # /top, /bottom
+  gamemode: true # /gamemode, /gmc, /gms, /gma, /gmsp
+  cosmetics: true # /poopgun, /devarmor, /forcefield
+  warps: false # /warp, /warps, /setwarp, /deletewarp, /editwarp
+  kits: false # /kit, /kits, /createkit, /deletekit, /editkit
+  per-kit-permission: false # If true then players need permission for every kit
+  op-manager: true # /tempop, /ops
+  join-spawn: true # join and respawn at the set spawnpoint
+  chat: true
+  mentions: true
+  MOTD: false
+  help-system: true # /help command
+  block-tab-complete: true # Show the configured command list for tab-complete
+  command-aliases: true # Aliases to commands but still registers main command
+  world-flags: true # Disable the world-flags and use vanilla world protection.
+  join-commands: true
+  join-messages: false
+  custom-join-messages: false
+  heal: true
+  eat: true
+  fly: true
+  flyspeed: true
+  inventorysee: true
+  clearinventory: true
+  give: true
+  head: true
+  setspawn: true # /setspawn command
+  spawn: true # /spawn command
+  itemname: true
+  lore: true
+  buildmode: true # Entire buildmode system, including buildmode, buildmode reset and buildmode admin commands
 
-# ==========================================
-#              UTILITY SETTINGS
-# ==========================================
-settings:
-  # General
-  prefix: "<gradient:#00A2FF:#00F0FF><bold>MINEWAR</bold></gradient> <dark_gray>»</dark_gray> <gray>"
-  time-format: "dd/MM/yyyy HH:mm:ss"
-  
-  # Chat
+utility:
+  tab-complete:
+    allowed-commands:
+    - spawn
+    - buildmode
+    - bm
+    - coinflip
+    - cf
+    - fly
+    - minewarutils
+    - mu
+    - help
   chat:
-    default-format: "<gray>%player%</gray><dark_gray>:</dark_gray> <white>%message%</white>"
-    staff-chat-format: "<red>[STAFF]</red> <gray>%player%</gray><dark_gray>:</dark_gray> <white>%message%</white>"
-    admin-chat-format: "<red>[ADMIN]</red> <gray>%player%</gray><dark_gray>:</dark_gray> <white>%message%</white>"
-  
-  # Tab List
-  tab-list:
-    header:
-      - "<gradient:#00A2FF:#00F0FF><bold>MINEWAR STUDIOS</bold></gradient>"
-      - "<gray>Development Server</gray>"
-      - ""
-    footer:
-      - ""
-      - "<gray>Online: <aqua>%server_online%</aqua></gray>"
-      - "<gray>TPS: <green>%server_tps%</green></gray>"
-      - ""
-      - "<gradient:#00A2FF:#00F0FF>www.minewar.net</gradient>"
-
-  # MOTD
-  motd:
-    line-1: "<gradient:#00A2FF:#00F0FF><bold>MINEWAR STUDIOS</bold></gradient> <dark_gray>-</dark_gray> <gray>Development</gray>"
-    line-2: "<gray>Maintained by <aqua>Jxsh</aqua></gray>"
-    centering: true
-    
-  # Join/Leave
-  messages:
-    join: "<gray>[<green>+</green>] <aqua>%player%</aqua></gray>"
-    leave: "<gray>[<red>-</red>] <aqua>%player%</aqua></gray>"
-    first-join: "<gradient:#00A2FF:#00F0FF><bold>WELCOME</bold></gradient> <gray>Welcome <aqua>%player%</aqua> to the server!</gray>"
-
-# ==========================================
-#            FEATURE CONFIGURATION
-# ==========================================
-
-# Poop Gun
-poop-gun:
-  cooldown: 5 # seconds
-  particle: "VILLAGER_HAPPY"
-  sound: "ENTITY_CHICKEN_EGG"
-  announce: true # Announce usage to nearby players
-  
-# Dev Armor
-dev-armor:
-  name: "<gradient:#FF0000:#FF5555><bold>DEVELOPER ARMOR</bold></gradient>"
-  lore:
-    - "<gray>Unbreakable armor for</gray>"
-    - "<gray>development purposes.</gray>"
-  effects:
-    - "SPEED:2"
-    - "FIRE_RESISTANCE:1"
-    - "NIGHT_VISION:1"
-  materials:
-    helmet: NETHERITE_HELMET
-    chestplate: NETHERITE_CHESTPLATE
-    leggings: NETHERITE_LEGGINGS
-    boots: NETHERITE_BOOTS
-
-# Build Mode
-build-mode:
-  inventory-save: true
-  action-bar: true
-  reset-delay: 5 # Seconds before resetting inventory on disable to prevent glitches
-  auto-fly: true # Automatically enable flight when entering build mode
-  reset-commands:
-    - "gamemode survival %player%"
-    - "effect clear %player%"
-
-# Auto Announcer
-announcer:
-  interval: 300 # seconds
-  random: false
-  sound: "BLOCK_NOTE_BLOCK_PLING"
-  messages:
-    - "<gray>Join our Discord: <aqua>discord.gg/minewar</aqua></gray>"
-    - "<gray>Follow us on Twitter: <aqua>@MinewarStudios</aqua></gray>"
-    - "<gray>Type <aqua>/help</aqua> for a list of commands.</gray>"
-
-# Warps & Kits
-warps:
-  teleport-delay: 3 # Seconds
-  cancel-on-move: true
-  menu-title: "<dark_gray>Server Warps</dark_gray>"
-  items:
+    clickable-links: true
+    link-format: <yellow>%link%
+    format: <white>%luckperms_prefix%<gray>%player% <dark_gray>»</dark_gray> <#ccffff>%message%
+  group-formats:
+    Owner: <white>%luckperms_prefix%<gray>%player% <dark_gray>»</dark_gray> <#0adef7>%message%
+  mentions:
+    # The sound played to the mentioned player
+    sound: minecraft:entity.villager.ambient
+    volume: 1.0
+    pitch: 1.0
+  disabled-mentions: []
+  join-commands:
+    commands:
+    - clear %player_name%
+  aliases:
+    minewarutils:
+      command: "/minewarutils"
+      aliases:
+      - "mu"
+      - "mwu"
+      sub-commands:
+        reload:
+          command: "reload"
+          aliases:
+          - "rl"
+        sneak:
+          command: "sneak"
+          aliases:
+          - "s"
+        world:
+          command: "world"
+          aliases:
+          - "w"
+        help:
+          command: "help"
+          aliases:
+          - "?"
+    mutechat:
+      command: "/mutechat"
+      aliases:
+      - mc
+    slowchat:
+      command: "/slowchat"
+      aliases:
+      - slc
+    clearchat:
+      command: "/clearchat"
+      aliases:
+      - "cc"
+    top:
+      command: "/top"
+      aliases: []
+    bottom:
+      command: "/bottom"
+      aliases: []
+    heal:
+      command: "/heal"
+      aliases: []
+    eat:
+      command: "/feed"
+      aliases:
+      - "eat"
+    fly:
+      command: "/fly"
+      aliases:
+      - "flight"
+    flyspeed:
+      command: "/flyspeed"
+      aliases:
+      - "speed"
+    gamemode:
+      command: "/gamemode"
+      aliases:
+      - "gm"
+    gmc:
+      command: "/gmc"
+      aliases: 
+      - "creative"
+    gms:
+      command: "/gms"
+      aliases: 
+      - "survival"
+    gma:
+      command: "/gma"
+      aliases: 
+      - "adventure"
+    gmsp:
+      command: "/gmsp"
+      aliases: 
+      - "spectator"
+    inventorysee:
+      command: "/inventorysee"
+      aliases:
+      - "invsee"
+    clearinventory:
+      command: "/clearinventory"
+      aliases:
+      - "ci"
+      - "clear"
+    give:
+      command: "/give"
+      aliases:
+      - "i"
+    head:
+      command: "/head"
+      aliases:
+      - "skull"
+      - "playerhead"
+      - "gethead"
+    setspawn:
+      command: "/setspawn"
+      aliases: 
+      - "setjoin"
+      - "setjoinloc"
     spawn:
-      material: "BEACON"
-      slot: 13
-      name: "<aqua><bold>SPAWN</bold></aqua>"
+      command: "/spawn"
+      aliases: []
+    buildmode:
+      command: "/buildmode"
+      aliases:
+      - "bm"
+    bmadmin:
+      command: "/bmadmin"
+      aliases:
+      - "bma"
+    bmreset:
+      command: "/bmreset"
+      aliases:
+      - "bmr"
+    poopgun:
+      command: "/poopgun"
+      aliases:
+      - "pg"
+    devarmour:
+      command: "/devarmour"
+      aliases: []
+    setwarp:
+      command: "/setwarp"
+      aliases:
+      - "createwarp"
+      - "addwarp"
+    warp:
+      command: "/warp"
+      aliases: []
+    warps:
+      command: "/warps"
+      aliases: []
+    deletewarp:
+      command: "/deletewarp"
+      aliases:
+      - "delwarp"
+      - "removewarp"
+    editwarp:
+      command: "/editwarp"
+      aliases: 
+      - "ewarp"
+      - "edwarp"
+    itemname:
+      command: "/itemname"
+      aliases:
+      - "rename"
+    lore:
+      command: "/lore"
+      aliases: []
+    forcefield:
+      command: "/forcefield"
+      aliases:
+      - "ff"
+    createkit:
+      command: "/createkit"
+      aliases: []
+    kit:
+      command: "/kit"
+      aliases: []
+    deletekit:
+      command: "/deletekit"
+      aliases: []
+    editkit:
+      command: "/editkit"
+      aliases: []
+    kits:
+      command: "/kits"
+      aliases: []
+    tempop:
+      command: "/tempop"
+      aliases: 
+      - "op"
+    ops:
+      command: "/ops"
+      aliases: []
+    deop:
+      command: "/deop"
+      aliases: []
+    help:
+      command: "/help"
+      aliases: 
+      - "?"
+
+world:
+  spawn: {}
+  buildmode:
+    database-file: buildmode_data.json
+    deny-global-build: true
+    send-deny-message: false
+  world-flags:
+    destroy: true
+    place: true
+    pvp: true
+    invincible: false
+    spawnmobs: true
+    nomobs: false
+    antivoid: true
+    antivoid-level: -125
+    blockdecay: false
+    0tick: true
+  worlds: {}
+
+fun:
+  poop-gun:
+    shoot-cooldown: 5 # Seconds
+    velocity: 1.5
+    item:
+      material: DIAMOND_HOE
+      name: '&6&lPoop Gun'
+      poop-duration: 15 # Seconds
       lore:
-        - "<gray>Teleport to the main spawn.</gray>"
-        - ""
-        - "<yellow>Click to teleport!</yellow>"
-
-kits:
-  cooldown-message: "<red>You must wait <yellow>%time%</yellow> before using this kit again.</red>"
-  menu-title: "<dark_gray>Available Kits</dark_gray>"
-  teleport-delay: 0 # Instant by default
-  cancel-on-move: false
-
-# Op Manager
-op-manager:
-  security-level: HIGH # HIGH, MEDIUM, LOW
-  log-to-file: true
-  log-to-console: true
-  notify-admins: true
-
-# ==========================================
-#               WORLD SETTINGS
-# ==========================================
-worlds:
-  world:
-    flags:
-      pvp: false
-      mob-spawning: false
-      block-breaking: false
-      block-placing: false
-      hunger: false
-      weather-lock: "CLEAR"
-      time-lock: 6000
-    void-generator: true # Use custom void generator
-
-# ==========================================
-#              COMMAND ALIASES
-# ==========================================
-aliases:
-  gmc: "gamemode creative"
-  gms: "gamemode survival"
-  gma: "gamemode adventure"
-  gmsp: "gamemode spectator"
-  day: "time set day"
-  night: "time set night"
-  sun: "weather clear"
-  rain: "weather rain"
-  fly: "fly" # Requires features.custom-commands: true
-
-# ==========================================
-#            LUCKPERMS HOOK
-# ==========================================
-luckperms:
-  sync-groups: true
-  default-group: "default"
-  admin-group: "admin"
-  update-interval: 60 # seconds
+      - '&7Right-click to shoot!'
+      - '&7Make them poop!'
+    sound: minecraft:entity.player.burp
+    volume: 1.0
+    pitch: 0.1
+  dev-armor:
+    shuffle-speed: 5 # Ticks
+    item-name: "&c&lDev Armor"
+  forcefield: 
+    range: 2
+    sound: minecraft:entity.chicken.egg
+    volume: 2.0
+    pitch: 0.1
+  crouch-settings:
+    enabled-users:
+    - Jxsh
+    - xJosh69
+  drop-item-type: POPPY 
+  drop-item-name: <white>%luckperms_suffix%%player_name% <gray>dropped a rose
+  drop-item-enabled: false
+  drop-duration-seconds: 5
+  particle-type: HEART
+  particle-count: 1
+  particle-duration-seconds: 1

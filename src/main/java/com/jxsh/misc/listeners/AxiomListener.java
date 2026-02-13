@@ -10,9 +10,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AxiomListener implements Listener {
 
+    private final JxshMisc plugin;
+    private final BuildModeManager buildModeManager;
+
     public AxiomListener(JxshMisc plugin, BuildModeManager buildModeManager) {
+        this.plugin = plugin;
+        this.buildModeManager = buildModeManager;
     }
 
     /*

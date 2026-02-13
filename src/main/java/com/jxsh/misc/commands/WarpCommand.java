@@ -85,7 +85,7 @@ public class WarpCommand extends BaseCommand {
         // shared.
         // I will handle the "warps" label check after inspecting BaseCommand.
 
-        if (args.length < 1 || args[0].equalsIgnoreCase("list")) {
+        if (args.length < 1) {
             listWarps(player);
             return;
         }

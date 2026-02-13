@@ -1,17 +1,25 @@
 package com.jxsh.misc.managers;
 
 import com.jxsh.misc.JxshMisc;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
+import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class TempOpManager {
 
     private final JxshMisc plugin;
-    private final com.jxsh.misc.managers.DatabaseManager db;
+    private YamlDocument tempOpsConfig;
 
     public enum OpType {
         PERM,
@@ -31,7 +39,7 @@ public class TempOpManager {
         }
     }
 
-    // Map<ReceiverUUID, OpData> - Cache of active ops
+    // Map<ReceiverUUID, OpData>
     private final Map<UUID, OpData> activeOps = new ConcurrentHashMap<>();
 
     public Set<UUID> getTempOps() {
@@ -40,41 +48,74 @@ public class TempOpManager {
 
     public TempOpManager(JxshMisc plugin) {
         this.plugin = plugin;
-        this.db = plugin.getDatabaseManager();
         load();
         startCleanupTask();
     }
 
     public void load() {
-        activeOps.clear();
-        db.executeQuery("SELECT uuid, type, giver, expiration FROM temp_ops", rs -> {
-            try {
-                while (rs.next()) {
-                    String uuidStr = rs.getString("uuid");
-                    String typeStr = rs.getString("type");
-                    String giverStr = rs.getString("giver");
-                    long expiration = rs.getLong("expiration");
+        File databaseFolder = new File(plugin.getDataFolder(), "Database");
+        if (!databaseFolder.exists()) {
+            databaseFolder.mkdirs();
+        }
 
-                    UUID receiverUUID = UUID.fromString(uuidStr);
-                    OpType type = OpType.valueOf(typeStr);
-                    UUID giverUUID = (giverStr != null && !giverStr.isEmpty() && !giverStr.equals("null"))
-                            ? UUID.fromString(giverStr)
-                            : null;
+        try {
+            File file = new File(databaseFolder, "tempop.yml");
+            tempOpsConfig = YamlDocument.create(
+                    file,
+                    GeneralSettings.builder().setUseDefaults(false).build(),
+                    LoaderSettings.builder().setAutoUpdate(true).build(),
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder().setKeepAll(true).build());
 
-                    activeOps.put(receiverUUID, new OpData(type, giverUUID, expiration));
-                }
-            } catch (Exception e) {
-                plugin.getLogger().severe("Failed to load active temp-ops from database!");
-                e.printStackTrace();
-            }
-            return null;
-        }).join();
+            loadFromConfig();
+
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to load tempop.yml!");
+            e.printStackTrace();
+        }
     }
 
-    // No explicit save() needed as we write on changes.
-    // Kept empty method if any legacy calls exist, or we can remove it.
+    private void loadFromConfig() {
+        activeOps.clear();
+        if (!tempOpsConfig.contains("active-ops"))
+            return;
+
+        dev.dejvokep.boostedyaml.block.implementation.Section section = tempOpsConfig.getSection("active-ops");
+        for (Object key : section.getKeys()) {
+            String receiverStr = key.toString();
+            try {
+                UUID receiverUUID = UUID.fromString(receiverStr);
+                String typeStr = section.getString(receiverStr + ".type");
+                String giverStr = section.getString(receiverStr + ".giver");
+                long expiration = section.getLong(receiverStr + ".expiration", 0L);
+
+                OpType type = OpType.valueOf(typeStr);
+                UUID giverUUID = giverStr != null ? UUID.fromString(giverStr) : null;
+
+                activeOps.put(receiverUUID, new OpData(type, giverUUID, expiration));
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load tempop data for " + receiverStr);
+            }
+        }
+    }
+
     public void save() {
-        // No-op for SQL implementation
+        tempOpsConfig.remove("active-ops");
+        for (Map.Entry<UUID, OpData> entry : activeOps.entrySet()) {
+            String path = "active-ops." + entry.getKey().toString();
+            OpData data = entry.getValue();
+            tempOpsConfig.set(path + ".type", data.type.name());
+            if (data.giver != null) {
+                tempOpsConfig.set(path + ".giver", data.giver.toString());
+            }
+            tempOpsConfig.set(path + ".expiration", data.expiration);
+        }
+
+        try {
+            tempOpsConfig.save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void grantOp(Player giver, Player receiver, OpType type, long durationSeconds) {
@@ -84,38 +125,58 @@ public class TempOpManager {
 
         receiver.setOp(true);
         long expiration = (type == OpType.TIME) ? System.currentTimeMillis() + (durationSeconds * 1000L) : 0;
-        UUID receiverUUID = receiver.getUniqueId();
-        UUID giverUUID = giver.getUniqueId();
 
-        OpData data = new OpData(type, giverUUID, expiration);
-        activeOps.put(receiverUUID, data);
+        activeOps.put(receiver.getUniqueId(), new OpData(type, giver.getUniqueId(), expiration));
+        save();
 
-        // SQL Upsert
-        // We use REPLACE into or DELETE/INSERT.
-        // Simple helper:
-        db.executeUpdate("DELETE FROM temp_ops WHERE uuid=?", receiverUUID.toString());
-        db.executeUpdate("INSERT INTO temp_ops (uuid, type, giver, expiration) VALUES (?, ?, ?, ?)",
-                receiverUUID.toString(),
-                type.name(),
-                giverUUID.toString(),
-                expiration);
+        // Messages
+        String giverName = giver.getName();
+        String receiverName = receiver.getName();
 
-        // Messages should be handled by the Command class that calls this manager.
-        // We keep the manager logic pure.
+        if (type == OpType.TEMP) {
+            // Session Op Messages
+            receiver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.op-manager.grant")
+                    .replace("%target%", giverName), receiver));
+
+            giver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.op-manager.grant-sender")
+                    .replace("%target%", receiverName), giver));
+        } else {
+            // Time/Perm Op Messages
+            String timeStr = (type == OpType.PERM) ? "Permanent" : formatDuration(durationSeconds);
+
+            receiver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.tempop.granted-target")
+                    .replace("%time%", timeStr), receiver));
+
+            giver.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.tempop.granted")
+                    .replace("%target%", receiverName)
+                    .replace("%time%", timeStr), giver));
+        }
     }
 
-    // We need to know who revoked it, or why?
-    // Logic might need to be shifted if we want "sponsor-left" message.
-    // Overloading this or handling it in caller is better.
+    private String formatDuration(long seconds) {
+        if (seconds >= 86400)
+            return (seconds / 86400) + "d";
+        if (seconds >= 3600)
+            return (seconds / 3600) + "h";
+        if (seconds >= 60)
+            return (seconds / 60) + "m";
+        return seconds + "s";
+    }
+
     public void revokeOp(UUID receiverUUID) {
+        // We need to know who revoked it, or why?
+        // Logic might need to be shifted if we want "sponsor-left" message.
+        // Overloading this or handling it in caller is better.
         revokeOp(receiverUUID, null);
     }
 
     public void revokeOp(UUID receiverUUID, String reasonMsgKey) {
         activeOps.remove(receiverUUID);
-
-        // Remove from DB
-        db.executeUpdate("DELETE FROM temp_ops WHERE uuid=?", receiverUUID.toString());
+        save();
 
         Player receiver = Bukkit.getPlayer(receiverUUID);
         OfflinePlayer offlineReceiver = Bukkit.getOfflinePlayer(receiverUUID);
@@ -185,6 +246,6 @@ public class TempOpManager {
     }
 
     public void shutdown() {
-        // No explicit save needed
+        save();
     }
 }

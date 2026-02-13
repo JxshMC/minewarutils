@@ -70,7 +70,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     private com.jxsh.misc.managers.BuildModeManager buildModeManager;
     private com.jxsh.misc.managers.DevManager devManager;
     private com.jxsh.misc.managers.HelpManager helpManager;
-    private com.jxsh.misc.managers.DatabaseManager databaseManager;
     private final NetworkCache networkCache = new NetworkCache();
 
     private com.jxsh.misc.PAPIExpansion papiExpansion;
@@ -135,9 +134,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         // HelpCommand is now registered via CommandManager in registerCommands()
 
         // 3. Initialize Managers & Listeners
-        this.databaseManager = new com.jxsh.misc.managers.DatabaseManager(this);
-        this.databaseManager.initialize();
-
         scoreboardManager = new ScoreboardManager(this);
         getServer().getPluginManager().registerEvents(scoreboardManager, this);
 
@@ -271,11 +267,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
         devManager = null;
         helpManager = null;
         configManager = null;
-
-        if (databaseManager != null) {
-            databaseManager.close();
-            databaseManager = null;
-        }
     }
 
     private void registerCommands() {
@@ -397,10 +388,6 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     public com.jxsh.misc.managers.HelpManager getHelpManager() {
         return helpManager;
-    }
-
-    public com.jxsh.misc.managers.DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 
     public com.jxsh.misc.listeners.VanishPacketListener getVanishPacketListener() {
@@ -941,10 +928,5 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     public int getServerCount(String name) {
         return networkCache.getServerCount(name);
-    }
-
-    // Helper for null-safe byte conversion
-    public static @javax.annotation.Nonnull byte[] getBytes(@javax.annotation.Nonnull String input) {
-        return input.getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 }

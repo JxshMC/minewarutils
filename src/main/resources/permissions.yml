@@ -1,172 +1,294 @@
-#Jxsh-Core v1.0 made for minewar 
-config-version: 3 # DO NOT MODIFY
+config-version: 3
+# Permission Configuration
+# Map internal command keys to the actual permission nodes required
+# You can change the values here to use different permission strings if desired.
 
-op-bypass: true # If true then opped players have all permission
-
-permissions:
-  # General
-  core.reload:
-    description: reload the plugin
-    default: op
-  core.help:
-    description: help command
+commands:
+  # MinewarUtils Subcommands
+  minewar.admin:
+    description: "Administrator permission for all Minewar Utils features"
+    children:
+      minewar.op.others: true
+      minewar.deop.others: true
+      minewar.heal.others: true
+      minewar.eat.others: true
+      minewar.fly.others: true
+      minewar.gamemode.others: true
+      minewar.invsee.others: true
+      minewar.cooldown.bypass: true
+      minewar.tabcomplete.bypass: true
+      minewar.buildmode.admin: true
+    op-bypass: true
+  reload:
+    node: "minewar.admin.reload"
+    default: false
+    op-bypass: false
+  sneak:
+    node: "minewar.admin.sneak"
+    default: false
+    op-bypass: false
+  world-flags:
+    node: "minewar.admin.world"
+    default: false
+    op-bypass: false
+  help:
+    node: "minewar.help"
     default: true
+    op-bypass: true
 
-  # Chat
-  chat.color:
-    description: use color codes in chat
-    default: op
-  chat.bypass:
-    description: bypass chat cooldown/filter
-    default: op
-  chat.admin:
-    description: see admin chat
-    default: op
-  chat.staff:
-    description: see staff chat
-    default: op
-  chat.mute:
-    description: mute the chat
-    default: op
-  chat.slow:
-    description: slow the chat
-    default: op
-  chat.clear:
-    description: clear the chat
-    default: op
-
-  # Utils
-  utils.heal:
-    description: heal command
-    default: op
-  utils.feed:
-    description: feed command
-    default: op
-  utils.fly:
-    description: fly command
-    default: op
-  utils.flyspeed:
-    description: flyspeed command
-    default: op
-  utils.gamemode:
-    description: gamemode command
-    default: op
-  utils.gamemode.creative:
-    description: creative gamemode
-    default: op
-  utils.gamemode.survival:
-    description: survival gamemode
-    default: op
-  utils.gamemode.adventure:
-    description: adventure gamemode
-    default: op
-  utils.gamemode.spectator:
-    description: spectator gamemode
-    default: op
-  utils.invsee:
-    description: invsee command
-    default: op
-  utils.clearinv:
-    description: clearinv command
-    default: op
-  utils.give:
-    description: give command
-    default: op
-  utils.head:
-    description: head command
-    default: op
-  utils.setspawn:
-    description: setspawn command
-    default: op
-  utils.spawn:
-    description: spawn command
+  # Chat Control
+  mutechat:
+    node: "minewar.mutechat.toggle"
+    default: false
+    op-bypass: false
+  slowchat:
+    node: "minewar.slowchat.set"
+    default: false
+    op-bypass: false
+  clearchat:
+    node: "minewar.clearchat"
+    default: false
+    op-bypass: false
+  mentiontoggle:
+    node: "minewar.mentiontoggle"
     default: true
-  utils.itemname:
-    description: itemname command
-    default: op
-  utils.lore:
-    description: lore command
-    default: op
-  utils.top:
-    description: top command
-    default: op
-  utils.bottom:
-    description: bottom command
-    default: op
+    op-bypass: true
+  mentions:
+    node: "minewar.mentions"
+    default: true
+    op-bypass: true
+
+  # Bypasses (Now unified under commands)
+  mutechat-bypass:
+    node: "minewar.mutechat.bypass"
+    default: false
+    op-bypass: true
+  slowchat-bypass:
+    node: "minewar.slowchat.bypass"
+    default: false
+    op-bypass: true
+  clearchat-bypass:
+    node: "minewar.clearchat.bypass"
+    default: false
+    op-bypass: false
   
-  # BuildMode
-  buildmode.use:
-    description: toggle buildmode
-    default: op
-  buildmode.admin:
-    description: manage other players buildmode
-    default: op
-  buildmode.reset:
-    description: reset buildmode changes
-    default: op
+  # Core Commands
+  top:
+    node: "minewar.top"
+    default: false
+    op-bypass: true
+  bottom:
+    node: "minewar.bottom"
+    default: false
+    op-bypass: true
+  heal:
+    node: "minewar.heal"
+    default: false
+    op-bypass: true
+  eat:
+    node: "minewar.eat"
+    default: false
+    op-bypass: true
+  fly:
+    node: "minewar.fly"
+    default: false
+    op-bypass: true
+  flyspeed:
+    node: "minewar.flyspeed"
+    default: false
+    op-bypass: true
+  gamemode:
+    node: "minewar.gamemode"
+    default: false
+    op-bypass: true
+  gmc:
+    node: "minewar.gamemode.creative"
+    default: false
+    op-bypass: true
+  gms:
+    node: "minewar.gamemode.survival"
+    default: false
+    op-bypass: true
+  gma:
+    node: "minewar.gamemode.adventure"
+    default: false
+    op-bypass: true
+  gmsp:
+    node: "minewar.gamemode.spectator"
+    default: false
+    op-bypass: true
+  inventorysee:
+    node: "minewar.inventorysee"
+    default: false
+    op-bypass: false
+  clearinventory:
+    node: "minewar.clearinventory"
+    default: false
+    op-bypass: true
+  give:
+    node: "minewar.give"
+    default: false
+    op-bypass: true
+  head:
+    node: "minewar.head"
+    default: false
+    op-bypass: true
+  setspawn:
+    node: "minewar.setspawn"
+    default: false
+    op-bypass: true
+  spawn:
+    node: "minewar.spawn"
+    default: true
+    op-bypass: true
   
-  # Fun
-  fun.poopgun:
-    description: use poop gun
-    default: op
-  fun.devarmor:
-    description: use dev armor
-    default: op
-  fun.forcefield:
-    description: use forcefield
-    default: op
-    
-  # Warps
-  warps.use:
-    description: use warps
-    default: true
-  warps.manage:
-    description: manage warps
-    default: op
-    
-  # Kits
-  kits.use:
-    description: use kits
-    default: true
-  kits.manage:
-    description: manage kits
-    default: op
-    
-  # Op Manager
-  op.grant:
-    description: grant temp op
-    default: op
-  op.revoke:
-    description: revoke temp op
-    default: op
-  # Inventory & Items
-  utils.inventorysee:
-    description: see other players inventory
-    default: op
-  utils.clearinventory:
-    description: clear other players inventory
-    default: op
-  utils.give:
-    description: give items
-    default: op
-  utils.head:
-    description: give player heads
-    default: op
-  utils.itemname:
-    description: rename items
-    default: op
-  utils.lore:
-    description: edit item lore
-    default: op
+  # Build Mode
+  buildmode:
+    node: "minewar.buildmode"
+    default: false
+    op-bypass: true
+  buildmode-others:
+    node: "minewar.buildmode.others"
+    default: false
+    op-bypass: true
+  bmadmin:
+    node: "minewar.buildmode.admin"
+    default: false
+    op-bypass: false
+  bmreset:
+    node: "minewar.buildmode.reset"
+    default: false
+    op-bypass: false
+  buildmode-bypass:
+    node: "minewar.buildmode.bypass"
+    default: false
+    op-bypass: false
 
-  # Teleport
-  utils.top:
-    description: teleport to top
-    default: op
-  utils.bottom:
-    description: teleport to bottom
-    default: op
+  # Utility
+  poopgun:
+    node: "minewar.poopgun"
+    default: false
+    op-bypass: true
+  devarmour:
+    node: "minewar.devarmour"
+    default: false
+    op-bypass: false
+
+  # Warp Permissions
+  setwarp:
+    node: "minewar.setwarp"
+    default: false
+    op-bypass: false
+  warp:
+    node: "minewar.warp"
+    default: true
+    op-bypass: true
+  warp-others:
+    node: "minewar.warp.others"
+    default: false
+    op-bypass: true 
+  warps:
+    node: "minewar.warp"
+    default: true
+    op-bypass: true
+  deletewarp:
+    node: "minewar.warp.delete"
+    default: false
+    op-bypass: false
+  editwarp:
+    node: "minewar.warp.edit"
+    default: false
+    op-bypass: false
+
+  # Item Customization Permissions
+  itemname:
+    node: "minewar.itemname"
+    default: false
+    op-bypass: true
+  lore:
+    node: "minewar.lore"
+    default: false
+    op-bypass: true
+
+  # Forcefield Permissions
+  forcefield:
+    node: "minewar.admin.forcefield"
+    default: false
+    op-bypass: false
+  forcefield-others:
+    node: "minewar.admin.forcefield.others"
+    default: false
+    op-bypass: false
+
+  # Kit Permissions
+  createkit:
+    node: "minewar.kit.create"
+    default: false
+    op-bypass: true
+  kit:
+    node: "minewar.kit"
+    default: true
+    op-bypass: true
+  kit-others:
+    node: "minewar.kit.others"
+    default: false
+    op-bypass: true
+  deletekit:
+    node: "minewar.kit.delete"
+    default: false
+    op-bypass: false
+  editkit:
+    node: "minewar.kit.edit"
+    default: false
+    op-bypass: false
+  kits:
+    node: "minewar.kit"
+    default: true
+    op-bypass: true
     
-  op.check:
-    description: check active ops
-    default: op
+  # Temp-OP
+  tempop:
+    node: "minewar.tempop"
+    default: false
+    op-bypass: false
+  tempop-grant:
+    node: "minewar.tempop.grant"
+    default: false
+    op-bypass: false
+  tempop-remove:
+    node: "minewar.tempop.remove"
+    default: false
+    op-bypass: false
+  ops:
+    node: "minewar.tempop.list"
+    default: false
+    op-bypass: true
+    
+  # Strict Target Permissions
+  "fly.others":
+    node: "minewar.fly.others"
+    default: false
+    op-bypass: true
+  "flyspeed.others":
+    node: "minewar.flyspeed.others"
+    default: false
+    op-bypass: true
+  "gamemode.others":
+    node: "minewar.gamemode.others"
+    default: false
+    op-bypass: true
+  "poopgun.others":
+    node: "minewar.poopgun.others"
+    default: false
+    op-bypass: true
+  "devarmour.others":
+    node: "minewar.devarmour.others"
+    default: false
+    op-bypass: true
+
+# Admin Permissions
+admin:
+  tabcomplete: minewar.admin.tabcomplete # Bypass tab-completion blocking
+  vanish-see: minewar.vanish.see # Can see vanished players
+  vanish-admins: minewar.vanish.admins # Hides from standard staff
+  vanish-admins-see: minewar.vanish.admins.see # Can see admin-vanished players
