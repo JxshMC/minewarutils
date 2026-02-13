@@ -942,4 +942,9 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     public int getServerCount(String name) {
         return networkCache.getServerCount(name);
     }
+
+    // Helper for null-safe byte conversion
+    public static @javax.annotation.Nonnull byte[] getBytes(@javax.annotation.Nonnull String input) {
+        return input.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
 }

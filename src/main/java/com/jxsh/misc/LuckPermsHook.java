@@ -3,12 +3,7 @@ package com.jxsh.misc;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
-import net.luckperms.api.query.QueryOptions;
-import net.luckperms.api.model.group.Group;
 import org.bukkit.Bukkit;
-
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class LuckPermsHook {
 

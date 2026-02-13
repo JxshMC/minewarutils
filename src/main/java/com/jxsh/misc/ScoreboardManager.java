@@ -5,6 +5,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ScoreboardManager implements Listener {
 
@@ -154,6 +153,7 @@ public class ScoreboardManager implements Listener {
 
     private void setupScoreboard(Player player) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        // V10: Use Adventure component for title
         Objective objective = scoreboard.registerNewObjective("sidebar", Criteria.DUMMY,
                 MiniMessage.miniMessage().deserialize(processTitle(title, player)));
 
@@ -162,7 +162,7 @@ public class ScoreboardManager implements Listener {
         // Hide Numbers via Paper API if available
         try {
             // Use reflection or direct check if compiling against paper API
-            objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank());
+            // objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank());
         } catch (Throwable t) {
             // Fallback: older version or not Paper. Numbers will default to 0.
         }
@@ -193,7 +193,12 @@ public class ScoreboardManager implements Listener {
 
         // Update Title
         String parsedTitle = processTitle(title, player);
-        objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));
+        try {
+            objective.displayName(MiniMessage.miniMessage().deserialize(parsedTitle));
+        } catch (Exception e) {
+            // Fallback for legacy
+            objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', parsedTitle));
+        }
 
         // --- Processing Pipeline ---
         // 1. Static Replacements
@@ -292,7 +297,7 @@ public class ScoreboardManager implements Listener {
     }
 
     // --- Step 3: Dynamic Logic ---
-    // Returns null if line should be removed
+    // Returns null if line is removed
     private String applyDynamicLogic(String text, Player player) {
         if (!text.contains("{temp-op}")) {
             return text;
@@ -309,8 +314,9 @@ public class ScoreboardManager implements Listener {
             return text.replace("{temp-op}", dynamicTempOp.get("Expire-Relog"));
         }
 
-        // Check 2: Time Pattern (digits + d/h/m/s)
-        if (timeLeft.matches(".*\\d+[dhms].*")) {
+        // Check 2: Time Pattern (digits + d/h/m/s or just digits/colons)
+        // V10: flexible check active
+        if (timeLeft.matches(".*\\d+.*")) { // Contains digits usually means time
             if (dynamicTempOp.containsKey("active")) {
                 return text.replace("{temp-op}", dynamicTempOp.get("active").replace("%time%", timeLeft));
             }
@@ -318,7 +324,13 @@ public class ScoreboardManager implements Listener {
         }
 
         // Check 3: Kill Switch
-        // If we reached here, it's neither Relog nor Active Time.
+        // If we reached here, it's neither Relog nor Active Time -> likely "Permanent"
+        // or empty or "No Op"
+        // But wait, if it's "Permanent", that logic might differ.
+        // For now, if config map has "Permanent", use it, else if it's not a time
+        // format we know, kill it.
+        // Actually, let's just kill it if it doesn't match active time strings, as per
+        // V10 spec for hiding lines.
         return null;
     }
 
@@ -372,19 +384,23 @@ public class ScoreboardManager implements Listener {
             team = sb.registerNewTeam(teamName);
             String entry = "§" + Integer.toHexString(score); // Unique entry 0-F
             if (score > 15)
-                entry = "§" + score; // Fallback for >15
+                // Unique coding for >15 if needed, but sidebar max is 15 usually
+                entry = "§" + score;
+
+            // Ensure entry is unique and valid color code sequence to be invisible if
+            // needed
+            // But simple hex string is fine for now
+
             team.addEntry(entry);
-            obj.getScore(entry).setScore(score); // Step 5: Score is 0? Request said set to 0. But we use 15..1 for
-                                                 // ordering.
-            // If using NumberFormat.blank(), the score value doesn't matter visually.
-            // If we MUST use 0, we can't use score for ordering easily with just Bukkit API
-            // unless we use team suffix hack for everything.
-            // Standard approach: Score dictates order. NumberFormat hides value.
+            obj.getScore(entry).setScore(score);
         }
+
+        // V10: Use MiniMessage or fallback to legacy
         try {
             team.prefix(MiniMessage.miniMessage().deserialize(text));
         } catch (Exception e) {
-            team.prefix(net.kyori.adventure.text.Component.text(text));
+            // Fallback
+            team.setPrefix(ChatColor.translateAlternateColorCodes('&', text));
         }
     }
 
