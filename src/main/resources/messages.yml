@@ -149,10 +149,14 @@ commands:
   # Temp-OP Command Messages
   tempop:
     usage: '<red>Usage: /tempop <player> [perm|time] | /tempop remove <player>'
-    revoke-sender: <#ccffff>You deopped %suffix_other%%target%.
-    granted: <#ccffff>You have granted TempOp to %suffix_other%%target% <#ccffff>for <#0adef7>%time%
-    granted-target: <#ccffff>You have been granted TempOp for <#0adef7>%time%
+    granted: "<green>You granted TempOp to %target% for %time%."
+    granted-target: "<green>You were granted TempOp for %time%."
+    revoke-sender: "<green>TempOp revoked from %target%."
     time-left-format: "%days%d, %hours%h, %minutes%m, %seconds%s"
+    time-left-perm: "Permanent"
+    time-left-temp: "Expire-Relog"
+    no-time: "N/A"
+    join-notify: "<#ccffff>You currently have <#0adef7>%tempop_time_left% <#ccffff>left of TempOp."
   
   error:
     no-permission: <red>You do not have permission to use this command.

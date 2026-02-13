@@ -30,17 +30,22 @@ public class TempOpListener implements Listener {
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(uuid);
 
             // If they are supposed to have TIME op, ensure they have it
-            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
-                if (System.currentTimeMillis() < data.expiration) {
-                    if (!event.getPlayer().isOp()) {
-                        event.getPlayer().setOp(true);
-                        // Maybe send a reminder?
-                        // event.getPlayer().sendMessage(plugin.parseText("<green>Welcome back! Your
-                        // TempOp is still active.", event.getPlayer()));
-                    }
-                } else {
+            if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME
+                    || data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+                if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME
+                        && System.currentTimeMillis() >= data.expiration) {
                     // Expired while offline
                     tempOpManager.revokeOp(uuid);
+                } else {
+                    // Still active (Time or Perm)
+                    if (!event.getPlayer().isOp()) {
+                        event.getPlayer().setOp(true);
+                    }
+                    // Send Join Notify
+                    String msg = plugin.getConfigManager().getMessages().getString("commands.tempop.join-notify");
+                    if (msg != null && !msg.isEmpty()) {
+                        event.getPlayer().sendMessage(plugin.parseText(msg, event.getPlayer()));
+                    }
                 }
             }
             // If they have TEMP (session based), they should have been revoked on quit.

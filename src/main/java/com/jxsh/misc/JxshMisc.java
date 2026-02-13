@@ -111,7 +111,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     }
 
     private void loadPluginSystem() {
-        // Initialize Config Manager (Handles loading/validating)
+        // 1. Initialize Config Manager FIRST (Handles loading/validating)
         this.configManager = new ConfigManager(this);
 
         // FORCE LOAD: Wait for config to load successfully
@@ -127,9 +127,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         loadConfigValues();
 
-        // Register HelpCommand via CommandMap EARLY (Fixes NPE if accessed early?)
-        // User requested: "Move initialization to the top of onEnable"
-        // We place it right after Config load to be safe.
+        // 2. Register HelpCommand EARLY (Fixes NPE)
         if (configManager.getConfig().getBoolean("help-system.enabled", true)) {
             try {
                 java.lang.reflect.Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
@@ -138,54 +136,48 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
                         .get(Bukkit.getServer());
 
                 com.jxsh.misc.commands.HelpCommand helpCmd = new com.jxsh.misc.commands.HelpCommand(this);
-                commandMap.register("minewarutils", helpCmd); // Registers as /help (via plugin.yml or dynamic?)
-                // Wait, HelpCommand logic usually handles /help.
-                // Registering it with fallback "minewarutils" prefix is standard.
-                // The actual command name inside HelpCommand constructor might be "help".
+                commandMap.register("minewarutils", helpCmd);
             } catch (Exception e) {
                 getLogger().severe("Failed to register HelpCommand to CommandMap!");
                 e.printStackTrace();
             }
         }
 
-        // Initialize Scoreboard Manager
+        // 3. Initialize Managers & Listeners
         scoreboardManager = new ScoreboardManager(this);
         getServer().getPluginManager().registerEvents(scoreboardManager, this);
 
-        // Initialize Chat Manager
         chatManager = new ChatManager(this);
         getServer().getPluginManager().registerEvents(chatManager, this);
 
-        // Initialize LuckPerms Hook
         luckPermsHook = new LuckPermsHook(this);
 
         getServer().getPluginManager().registerEvents(this, this);
 
-        // Register Plugin Messaging Channel
+        // Channels
         getServer().getMessenger().registerIncomingPluginChannel(this, "minewar:staffchat", this);
         getServer().getMessenger().registerIncomingPluginChannel(this, "minewar:sync", this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "minewar:staffchat");
 
-        // Register Vanish Bridge
+        // Vanish
         this.vanishPacketListener = new com.jxsh.misc.listeners.VanishPacketListener(this);
-        getServer().getMessenger().registerIncomingPluginChannel(this, "minewar:vanish",
-                vanishPacketListener);
+        getServer().getMessenger().registerIncomingPluginChannel(this, "minewar:vanish", vanishPacketListener);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "minewar:vanish");
 
-        // Register PAPI Expansion
+        // PAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             this.papiExpansion = new PAPIExpansion(this);
             this.papiExpansion.register();
         }
 
-        // Register Global Chat Channel
+        // Global Chat
         getServer().getMessenger().registerIncomingPluginChannel(this, "minewar:globalchat", this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "minewar:globalchat");
 
         loadDisabledMentions();
         loadDisabledPMs();
 
-        // Initialize Managers
+        // Core Managers
         this.commandManager = new CommandManager(this);
         this.spawnManager = new SpawnManager(this);
         getServer().getPluginManager().registerEvents(spawnManager, this);
@@ -200,11 +192,14 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         this.buildModeManager = new com.jxsh.misc.managers.BuildModeManager(this);
 
+        // AntiPopup
+        if (configManager.isFeatureEnabled("antipopup")) {
+            new com.jxsh.misc.features.antipopup.AntiPopupManager(this).enable();
+        }
+
         if (configManager.isFeatureEnabled("buildmode")) {
             getServer().getPluginManager()
                     .registerEvents(new com.jxsh.misc.listeners.BuildModeListener(this, buildModeManager), this);
-
-            // Register WorldEdit Listener
             if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null
                     || Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit") != null) {
                 com.sk89q.worldedit.WorldEdit.getInstance().getEventBus()
@@ -212,35 +207,33 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
             }
         }
 
-        // Register Tab Complete Listener (blocks command suggestions for non-admins)
+        // Tab Complete Security
         getServer().getPluginManager().registerEvents(new com.jxsh.misc.listeners.TabCompleteListener(this), this);
 
-        // Generate Config Defaults (Permissions and Messages)
+        // Defaults
         generateDefaults();
 
-        // Register Join Command Listener
+        // Join Commands
         if (configManager.getConfig().getBoolean("Join-Commands.enabled", true)) {
             getServer().getPluginManager().registerEvents(new com.jxsh.misc.listeners.JoinCommandListener(this), this);
         }
 
-        // Register feature listeners
+        // Feature Listeners
         if (configManager.isFeatureEnabled("poopgun")) {
             getServer().getPluginManager().registerEvents(new com.jxsh.misc.listeners.PoopGunListener(this), this);
         }
         if (configManager.isFeatureEnabled("tempop")) {
-            getServer().getPluginManager().registerEvents(
-                    new com.jxsh.misc.listeners.TempOpListener(this, tempOpManager),
-                    this);
+            getServer().getPluginManager()
+                    .registerEvents(new com.jxsh.misc.listeners.TempOpListener(this, tempOpManager), this);
         }
 
-        // Start tasks
+        // Tasks
         if (devManager != null && configManager.isFeatureEnabled("devarmour")) {
             new com.jxsh.misc.tasks.ArmourTask(this, devManager).runTaskTimer(this, 0L, 20L);
         }
 
-        // Register Commands (ONLY if config loaded successfully)
+        // Register Commands
         registerCommands();
-
     }
 
     private void unloadPluginSystem() {

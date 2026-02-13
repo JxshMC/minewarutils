@@ -114,21 +114,22 @@ public class PAPIExpansion extends PlaceholderExpansion {
 
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
             if (data == null)
-                return "";
+                return ""; // Or "no-time"? But usually empty if not opped.
 
+            String result = "";
             if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
                 long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
                 if (remaining < 0)
                     remaining = 0;
-
-                // Dynamic Formatting: Hide units that are 0.
-                // We need a helper for this.
-                return formatDurationDynamic(remaining);
+                result = formatDurationDynamic(remaining);
             } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
-                return "Permanent";
+                result = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm",
+                        "Permanent");
             } else {
-                return "Relog";
+                result = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp",
+                        "Expire-Relog");
             }
+            return result;
         }
 
         return null;
@@ -143,17 +144,33 @@ public class PAPIExpansion extends PlaceholderExpansion {
         long minutes = (totalSeconds % 3600) / 60;
         long seconds = totalSeconds % 60;
 
-        StringBuilder sb = new StringBuilder();
-        if (days > 0)
-            sb.append(days).append("d ");
-        if (hours > 0)
-            sb.append(hours).append("h ");
-        if (minutes > 0)
-            sb.append(minutes).append("m ");
-        if (seconds > 0)
-            sb.append(seconds).append("s");
+        String format = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-format",
+                "%days%d, %hours%h, %minutes%m, %seconds%s");
 
-        // Trim and return
-        return sb.length() > 0 ? sb.toString().trim() : "0s";
+        // Hide 0 units logic:
+        // We can't strictly use the format string if we are hiding units, because the
+        // separators (commas) might be left dangling.
+        // But the user said: "Logic: If a unit is 0, hide it."
+        // And "time-left-format: %days%d, %hours%h, %minutes%m, %seconds%s"
+        // This suggests we should build it dynamically based on the PRESENCE of units.
+        // OR we replace 0 units with empty string?
+        // "0d, " -> ""? That leaves ", ".
+        // Let's build it dynamically using the suffix from the config?
+        // Actually, typically "Hide 0 units" means building a list of non-zero parts.
+
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        if (days > 0)
+            parts.add(days + "d");
+        if (hours > 0)
+            parts.add(hours + "h");
+        if (minutes > 0)
+            parts.add(minutes + "m");
+        if (seconds > 0)
+            parts.add(seconds + "s");
+
+        if (parts.isEmpty())
+            return "0s"; // Or "Expired"?
+
+        return String.join(", ", parts);
     }
 }
