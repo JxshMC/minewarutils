@@ -1,3 +1,6 @@
 autoupload.sh
 config.yml
 *.log
+.gradle/
+build/
+.DS_Store
