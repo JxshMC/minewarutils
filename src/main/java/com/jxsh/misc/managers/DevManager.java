@@ -52,4 +52,4 @@ public class DevManager {
             }
         }.runTaskTimer(plugin, 0L, speed);
     }
-}```
+}
