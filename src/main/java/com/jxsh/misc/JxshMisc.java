@@ -761,18 +761,33 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
         if (tempOpManager != null && player != null) {
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
-            String timeLeft = "Expire-Relog";
-            if (data != null && data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
-                long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
-                if (remaining < 0)
-                    remaining = 0;
+            String timeLeft = configManager.getMessages().getString("commands.tempop.no-time", "N/A"); // Default
+                                                                                                       // fallback
 
-                String format = configManager.getMessages().getString("commands.tempop.time-left-format",
-                        "%days%d, %hours%h, %minutes%m, %seconds%s");
-                timeLeft = formatDurationConfigurable(remaining, format);
-            } else if (data != null) {
-                timeLeft = "Permanent";
+            if (data != null) {
+                if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+                    timeLeft = configManager.getMessages().getString("commands.tempop.time-left-perm", "Permanent");
+                } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP) {
+                    // Exists but no specific duration set (Relog-only)
+                    timeLeft = configManager.getMessages().getString("commands.tempop.time-left-temp", "Expire-Relog");
+                } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
+                    long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
+                    if (remaining < 0)
+                        remaining = 0;
+
+                    String format = configManager.getMessages().getString("commands.tempop.time-left-format",
+                            "%days%d, %hours%h, %minutes%m, %seconds%s");
+                    timeLeft = formatDurationConfigurable(remaining, format);
+                }
+            } else if (player.isOp()) {
+                // Fallback for Vanilla OP if we want to show "Perm"
+                // usage says "no-time" if no OP data exists, essentially.
+                // But if they are OP but not in our system, maybe we show "Perm" or "N/A".
+                // Detailed instructions: "If no OP data exists, return the value from
+                // commands.tempop.no-time."
+                // So we use the default we set above.
             }
+
             processed = processed.replace("%time_left%", timeLeft);
             processed = processed.replace("%tempop_time_left%", timeLeft);
         }
