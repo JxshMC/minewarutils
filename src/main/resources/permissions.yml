@@ -139,6 +139,34 @@ permissions:
   op.revoke:
     description: revoke temp op
     default: op
+  # Inventory & Items
+  utils.inventorysee:
+    description: see other players inventory
+    default: op
+  utils.clearinventory:
+    description: clear other players inventory
+    default: op
+  utils.give:
+    description: give items
+    default: op
+  utils.head:
+    description: give player heads
+    default: op
+  utils.itemname:
+    description: rename items
+    default: op
+  utils.lore:
+    description: edit item lore
+    default: op
+
+  # Teleport
+  utils.top:
+    description: teleport to top
+    default: op
+  utils.bottom:
+    description: teleport to bottom
+    default: op
+    
   op.check:
     description: check active ops
     default: op

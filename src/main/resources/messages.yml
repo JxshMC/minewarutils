@@ -120,4 +120,9 @@ features:
     enabled: "<green>Forcefield enabled.</green>"
     disabled: "<red>Forcefield disabled.</red>"
 
+  start:
+    success: "<green>Plugin started successfully.</green>"
+  stop:
+    success: "<red>Plugin stopped successfully.</red>"
+
 
