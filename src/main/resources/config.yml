@@ -247,6 +247,9 @@ aliases:
   ops:
     command: "/ops"
     aliases: []
+  deop:
+    command: "/deop"
+    aliases: []
 
 # Sneak Effect Settings
 # The players enabled for sneak effects
