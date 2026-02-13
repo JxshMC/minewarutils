@@ -252,6 +252,8 @@ world:
     database-file: buildmode_data.json
     deny-global-build: true
     send-deny-message: false
+    auto-fly: true
+    reset-delay: 5
   world-flags:
     destroy: true
     place: true

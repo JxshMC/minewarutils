@@ -35,6 +35,8 @@ public class BuildModeManager {
     // Global lookup for simple "is tracked" checks (Legacy support & fast lookup)
     private final Map<String, UUID> trackedLocations = new ConcurrentHashMap<>();
 
+    private boolean dirty = false;
+    private BukkitTask saveTask;
     private boolean useSql = false;
 
     public BuildModeManager(JxshMisc plugin) {

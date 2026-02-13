@@ -37,6 +37,7 @@ import com.jxsh.misc.managers.WarpManager;
 import com.jxsh.misc.managers.KitManager;
 import com.jxsh.misc.managers.TempOpManager;
 import com.jxsh.misc.managers.ForcefieldManager;
+import com.jxsh.misc.managers.DatabaseManager;
 import com.jxsh.misc.commands.*;
 
 public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListener {
@@ -59,6 +60,7 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
     private final Set<UUID> disabledPMs = new HashSet<>();
     private com.jxsh.misc.listeners.VanishPacketListener vanishPacketListener;
 
+    private com.jxsh.misc.managers.DatabaseManager databaseManager;
     private CommandManager commandManager;
     private SpawnManager spawnManager;
     private ConfigManager configManager;
@@ -353,6 +355,10 @@ public class JxshMisc extends JavaPlugin implements Listener, PluginMessageListe
 
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+
+    public com.jxsh.misc.managers.DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     /**

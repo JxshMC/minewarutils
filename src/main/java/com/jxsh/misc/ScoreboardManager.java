@@ -276,8 +276,12 @@ public class ScoreboardManager implements Listener {
                     if (resolved == null)
                         resolved = "";
 
-                    // Logic: If resolved is empty "", check for rule ""
-                    if (resolved.isEmpty() && rules.containsKey("")) {
+                    // STRIP COLORS for "blank" check
+                    // (?i)[&§][0-9A-FK-ORX] matches color codes
+                    String stripped = resolved.replaceAll("(?i)[&§][0-9A-FK-ORX]", "");
+
+                    // Logic: If stripped is empty, check for rule ""
+                    if (stripped.isEmpty() && rules.containsKey("")) {
                         result = result.replace(papiKey, rules.get(""));
                     } else if (rules.containsKey(resolved)) {
                         result = result.replace(papiKey, rules.get(resolved));
@@ -303,6 +307,15 @@ public class ScoreboardManager implements Listener {
             timeLeft = PlaceholderAPI.setPlaceholders(player, "%tempop_time_left%");
         }
 
+        // Handle cases where PlaceholderAPI returns null or empty (unlikely but safe)
+        if (timeLeft == null)
+            timeLeft = "";
+
+        // Raw generic check: If it contains "N/A" (default fallback) -> Kill
+        if (timeLeft.contains("N/A") || timeLeft.isEmpty()) {
+            return null;
+        }
+
         // Dynamic Logic
         // Check 1: "Expire-Relog"
         if (timeLeft.equalsIgnoreCase("Expire-Relog") && dynamicTempOp.containsKey("Expire-Relog")) {
@@ -317,9 +330,11 @@ public class ScoreboardManager implements Listener {
             return text.replace("{temp-op}", timeLeft);
         }
 
-        // Check 3: Kill Switch
-        // If we reached here, it's neither Relog nor Active Time.
-        return null;
+        // Check 3: Permanent or other valid status
+        // If it's not N/A, not empty, we assume it's valid (e.g. "Permanent")
+        // We just display it as is (or allow custom formatting if we added a
+        // 'permanent' key)
+        return text.replace("{temp-op}", timeLeft);
     }
 
     // --- Visual Engine ---

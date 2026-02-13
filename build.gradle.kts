@@ -24,6 +24,9 @@ dependencies {
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.9.2")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.9.2")
     implementation("dev.dejvokep:boosted-yaml:1.3.7")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.3")
+    implementation("com.h2database:h2:2.2.224")
 }
 
 tasks.shadowJar {
@@ -43,6 +46,4 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
-    implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.3")
-    implementation("com.h2database:h2:2.2.224")
+

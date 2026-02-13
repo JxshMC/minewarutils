@@ -241,6 +241,19 @@ public class ConfigManager {
 
         defaultMessages.put("invalid-player", "<red>The player <#0adef7>%target% <#ccffff>was not found.");
 
+        // BuildMode
+        defaultMessages.put("commands.buildmode.enabled", "<green>Build mode enabled.");
+        defaultMessages.put("commands.buildmode.disabled", "<red>Build mode disabled.");
+        defaultMessages.put("commands.buildmode.no-perm", "<red>You do not have permission to build here.");
+
+        // Gamemode
+        defaultMessages.put("commands.gamemode.success", "<green>Set gamemode to %gamemode%.");
+        defaultMessages.put("commands.gamemode.success-other", "<green>Set gamemode of %target% to %gamemode%.");
+
+        // Errors
+        defaultMessages.put("commands.error.player-only", "<red>This command can only be used by players.");
+        defaultMessages.put("commands.error.args", "<red>Invalid arguments. Usage: %usage%");
+
         boolean modified = false;
         for (java.util.Map.Entry<String, String> entry : defaultMessages.entrySet()) {
             if (!messages.contains(entry.getKey())) {
