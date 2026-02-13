@@ -114,24 +114,21 @@ public class PAPIExpansion extends PlaceholderExpansion {
 
             com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
 
-            // Check if player is OP but not in our system (Vanilla OP)
+            // STRICT RULE: Type: Not Op -> Return commands.tempop.no-time
+            // Even if Vanilla OP, if they are not in TempOpManager, they get "no-time".
             if (data == null) {
-                if (player.isOp()) {
-                    // If vanilla OP, maybe we show "Permanent"? Or "N/A"?
-                    // User said: "None: Return commands.tempop.no-time."
-                    // But strictly speaking, if they are OP, they have permissions.
-                    // However, following the task: "If no OP data exists... return no-time"
-                    return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
-                }
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
             }
 
             if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+                // Type: Permanent -> Return commands.tempop.time-left-perm
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm", "Permanent");
-            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP) { // Relog-only
+            } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP) {
+                // Type: Session-Based -> Return commands.tempop.time-left-temp
                 return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp",
                         "Expire-Relog");
             } else if (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
+                // Type: Timed -> Calculate and format
                 long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
                 if (remaining < 0)
                     remaining = 0;

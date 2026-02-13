@@ -1,4 +1,4 @@
-config-version: 3
+config-version: 4
 
 # Command output message
 minewarutils-header: <gradient:#ccffff:#0adef7><b>Minewar-Utils<reset><yellow> [1.0] <gray>Developed by <red>Jxsh <gray>& <red>Jzsh
@@ -157,6 +157,12 @@ commands:
     time-left-temp: "Expire-Relog"
     no-time: "N/A"
     join-notify: "<#ccffff>You currently have <#0adef7>%tempop_time_left% <#ccffff>left of TempOp."
+  
+  deop:
+    usage: '<red>Usage: /deop <player>'
+    target-notify: "<#ccffff>You were deopped by <#0adef7>%player%."
+    success: "<#ccffff>You deopped <#0adef7>%target%."
+    not-op: "<red>That player is not opped."
   
   error:
     no-permission: <red>You do not have permission to use this command.

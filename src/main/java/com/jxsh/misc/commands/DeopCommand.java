@@ -29,7 +29,8 @@ public class DeopCommand extends BaseCommand {
         }
 
         if (args.length < 1) {
-            sender.sendMessage(plugin.parseText("<red>Usage: /deop <player>", null));
+            sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.deop.usage", "&cUsage: /deop <player>"), null));
             return;
         }
 
@@ -50,7 +51,8 @@ public class DeopCommand extends BaseCommand {
 
         if (targetUUID == null) {
             sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                    .getString("commands.error.invalid-player").replace("%target%", targetName), null));
+                    .getString("commands.error.invalid-player", "&cInvalid player %target%")
+                    .replace("%target%", targetName), null));
             return;
         }
 
@@ -63,14 +65,23 @@ public class DeopCommand extends BaseCommand {
             if (off.isOp()) {
                 off.setOp(false);
             } else {
-                sender.sendMessage(plugin.parseText("<red>That player is not opped.", null));
+                sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                        .getString("commands.deop.not-op", "&cThat player is not opped."), null));
                 return;
             }
         }
 
         sender.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
-                .getString("commands.tempop.revoke-sender", "<green>Op revoked from %target%.")
+                .getString("commands.deop.success", "&aYou deopped %target%.")
                 .replace("%target%", targetName), null));
+
+        // Notify target if online
+        Player targetOnline = Bukkit.getPlayer(targetUUID);
+        if (targetOnline != null) {
+            targetOnline.sendMessage(plugin.parseText(plugin.getConfigManager().getMessages()
+                    .getString("commands.deop.target-notify", "&cYou were deopped by %player%.")
+                    .replace("%player%", sender.getName()), targetOnline));
+        }
     }
 
     @Override

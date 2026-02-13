@@ -92,6 +92,7 @@ The permission system is strictly structured:
 - **MiniMessage:** All messages support MiniMessage formatting.
 
 ## Developer Notes
-- **Code Style:** No hardcoded messages in classes. Always use `configManager.getMessages().getString()`.
+- **STRICT RULE:** No hardcoded messages, permission strings, or formats in Java files. Everything must be fetched from YAML files.
+- **Code Style:** Always use `configManager.getMessages().getString()`.
 - **Config Safety:** Use `ConfigManager.validateConfig()` to ensure critical values (spawn, worlds) are valid.
 - **Help System:** `help.yml` controls the order and visibility of commands in `/mu help` and `/help`.

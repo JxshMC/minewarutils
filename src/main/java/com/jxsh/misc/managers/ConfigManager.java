@@ -173,7 +173,9 @@ public class ConfigManager {
                     GeneralSettings.builder().setUseDefaults(true).build(),
                     LoaderSettings.builder().setAutoUpdate(false).build(),
                     DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).setKeepAll(false)
+                    UpdaterSettings.builder()
+                            .setVersioning(new BasicVersioning("config-version"))
+                            .setKeepAll(false)
                             .build());
         }
 
