@@ -1,11 +1,12 @@
 package com.jxsh.misc;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PAPIExpansion extends PlaceholderExpansion {
+public class PAPIExpansion extends PlaceholderExpansion implements Relational {
 
     private final JxshMisc plugin;
 
@@ -35,6 +36,9 @@ public class PAPIExpansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(org.bukkit.OfflinePlayer player, @NotNull String params) {
+        if (player == null)
+            return "";
+
         // Resolve nested placeholders (e.g., %minewar_suffix_other%player%%)
         params = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, params);
         // Also resolve bracket placeholders for compatibility ({player_name})
@@ -63,9 +67,6 @@ public class PAPIExpansion extends PlaceholderExpansion {
             }
             return String.valueOf(total - vanishedCount);
         }
-
-        if (player == null)
-            return "";
 
         // %minewar_vanished%
         if (params.equalsIgnoreCase("vanished")) {
@@ -108,40 +109,54 @@ public class PAPIExpansion extends PlaceholderExpansion {
         }
 
         if (params.equals("tempop_time_left")) {
-            com.jxsh.misc.managers.TempOpManager tempOpManager = plugin.getTempOpManager();
-            if (tempOpManager == null)
-                return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
-
-            com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(player.getUniqueId());
-
-            // STEP 1: Check Permanent State
-            if (data != null && data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
-                return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm", "Permanent");
-            }
-
-            // STEP 2: Check Session/Temporary State
-            // If OpType is TEMP, OR if it's TIME but has no expiration (sanity check)
-            if (data != null && (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP
-                    || (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME && data.expiration == 0))) {
-                return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp", "Temporary");
-            }
-
-            // STEP 3: Check Timed State
-            if (data != null && data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
-                long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
-                if (remaining < 0)
-                    remaining = 0;
-
-                String format = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-format",
-                        "%days%d, %hours%h, %minutes%m, %seconds%s");
-                return formatDurationConfigurable(remaining, format);
-            }
-
-            // STEP 4: Fallback
-            return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time", "N/A");
+            return getTempOpTimeLeft(player.getUniqueId());
         }
 
         return null;
+    }
+
+    public String onPlaceholderRequest(Player one, Player two, String params) {
+        if (two == null)
+            return "";
+        if (params.equals("tempop_time_left")) {
+            return getTempOpTimeLeft(two.getUniqueId());
+        }
+        return null; // Let standard onRequest handle other cases if needed, or return null to skip
+    }
+
+    private String getTempOpTimeLeft(java.util.UUID targetUUID) {
+        com.jxsh.misc.managers.TempOpManager tempOpManager = plugin.getTempOpManager();
+        if (tempOpManager == null)
+            return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time");
+
+        com.jxsh.misc.managers.TempOpManager.OpData data = tempOpManager.getOpData(targetUUID);
+
+        // STEP 1: Check Permanent State
+        if (data != null && data.type == com.jxsh.misc.managers.TempOpManager.OpType.PERM) {
+            return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-perm");
+        }
+
+        // STEP 2: Check Session/Temporary State
+        if (data != null && (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TEMP
+                || (data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME && data.expiration == 0))) {
+            return plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-temp");
+        }
+
+        // STEP 3: Check Timed State
+        if (data != null && data.type == com.jxsh.misc.managers.TempOpManager.OpType.TIME) {
+            long remaining = (data.expiration - System.currentTimeMillis()) / 1000;
+            if (remaining < 0)
+                remaining = 0;
+
+            String format = plugin.getConfigManager().getMessages().getString("commands.tempop.time-left-format");
+            if (format == null)
+                format = "%days%d, %hours%h, %minutes%m, %seconds%s"; // Absolute fallback if config broken logic relies
+                                                                      // on it
+            return formatDurationConfigurable(remaining, format);
+        }
+
+        // STEP 4: Fallback
+        return plugin.getConfigManager().getMessages().getString("commands.tempop.no-time");
     }
 
     private String formatDurationConfigurable(long totalSeconds, String format) {
